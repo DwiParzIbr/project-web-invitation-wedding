@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AdminNavbar } from '@/components/layout/AdminNavbar';
 import { AdminFooter } from '@/components/layout/AdminFooter';
 import { DeleteConfirmModal } from '@/components/ui/DeleteConfirmModal';
-import { Music, ArrowLeft, Upload, CheckCircle, Play, Pause, Trash2, Disc } from 'lucide-react';
+import { Music, ArrowLeft, Upload, CheckCircle, Play, Pause, Trash2, Disc, X, RotateCcw } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { ScrollReveal } from '@/components/effects/ScrollReveal';
 import { getAudioDurationFromFile } from '@/utils/nameUtils';
@@ -21,12 +21,39 @@ export default function AdminMusicPage() {
   const [artist, setArtist] = useState('');
   const [genre, setGenre] = useState('Acoustic');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audioObj, setAudioObj] = useState<HTMLAudioElement | null>(null);
 
   // Delete Modal State
   const [deletingTrack, setDeletingTrack] = useState<any | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    // Menjamin hanya 1 file audio yang dipilih (single file only)
+    const file = files[0];
+    setSelectedFile(file);
+    if (file && !title) {
+      const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      setTitle(cleanName);
+    }
+  };
+
+  const handleResetSelectedFile = () => {
+    setSelectedFile(null);
+    const fileInput = document.getElementById('music-file-input') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
+  const handleResetAll = () => {
+    handleResetSelectedFile();
+    setTitle('');
+    setArtist('');
+    setGenre('Acoustic');
+  };
 
   // Fetch music tracks on load
   const loadMusicList = async () => {
@@ -73,8 +100,7 @@ export default function AdminMusicPage() {
 
   const handleUploadMusic = async (e: React.FormEvent) => {
     e.preventDefault();
-    const fileInput = document.getElementById('music-file-input') as HTMLInputElement;
-    const file = fileInput?.files?.[0];
+    const file = selectedFile;
     if (!file) return;
 
     setIsUploading(true);
@@ -112,6 +138,9 @@ export default function AdminMusicPage() {
         setUploadSuccess(true);
         setTitle('');
         setArtist('');
+        setSelectedFile(null);
+        const fileInput = document.getElementById('music-file-input') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
         setTimeout(() => setUploadSuccess(false), 3000);
       }
     } catch (err) {
@@ -219,22 +248,114 @@ export default function AdminMusicPage() {
               </select>
             </div>
 
-            <div className="sm:col-span-3 flex flex-col sm:flex-row items-center gap-4 pt-2">
-              <input
-                type="file"
-                id="music-file-input"
-                accept="audio/mp3,audio/*"
-                required
-                className={`text-xs p-2 border rounded-xl w-full sm:w-auto ${isLight ? 'bg-slate-50 border-slate-300' : 'bg-slate-950 border-slate-800'}`}
-              />
-              <button
-                type="submit"
-                disabled={isUploading}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gold-500 hover:bg-gold-400 text-slate-950 font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                <span>{isUploading ? 'Uploading & Saving to DB...' : 'Simpan Lagu ke Database'}</span>
-              </button>
+            <div className="sm:col-span-3 pt-2">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className={`font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
+                  Pilih File Audio MP3
+                </label>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  (Maks. 1 File Audio per Upload)
+                </span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                {/* Hidden native input with single file constraint */}
+                <input
+                  type="file"
+                  id="music-file-input"
+                  accept="audio/mp3,audio/*"
+                  multiple={false}
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                {/* Custom Styled Choose File Button */}
+                <label
+                  htmlFor="music-file-input"
+                  className={`px-5 py-3 rounded-2xl border-2 border-dashed font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] shrink-0 select-none ${
+                    selectedFile
+                      ? 'bg-gold-500/15 border-gold-500 text-gold-600 dark:text-gold-400 shadow-sm'
+                      : isLight
+                      ? 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-700'
+                      : 'bg-slate-950 hover:bg-slate-900 border-slate-700 text-slate-300'
+                  }`}
+                >
+                  <Music className="w-4 h-4 text-gold-500" />
+                  <span>{selectedFile ? 'Ganti File Audio' : 'Pilih File MP3'}</span>
+                </label>
+
+                {/* Selected File Name / Placeholder Box with Delete/Reset button */}
+                <div className={`flex-1 px-4 py-3 rounded-2xl border flex items-center justify-between min-w-0 transition-all ${
+                  selectedFile
+                    ? isLight
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                      : 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                    : isLight
+                    ? 'bg-slate-50 border-slate-200 text-slate-400'
+                    : 'bg-slate-950 border-slate-800 text-slate-500'
+                }`}>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${selectedFile ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                    <span className="truncate text-xs font-mono font-medium">
+                      {selectedFile ? selectedFile.name : 'Belum ada file audio yang dipilih (.mp3)'}
+                    </span>
+                  </div>
+
+                  {selectedFile && (
+                    <div className="flex items-center gap-2.5 shrink-0 ml-2">
+                      <span className="text-[11px] font-mono font-bold opacity-75">
+                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                      </span>
+                      {/* Tombol Hapus / Batal File Terpilih */}
+                      <button
+                        type="button"
+                        onClick={handleResetSelectedFile}
+                        className="px-2.5 py-1 rounded-xl bg-rose-500/15 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white border border-rose-500/30 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95"
+                        title="Hapus / Batal pilih file ini"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Hapus File</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tombol Reset Semua Isian Formulir */}
+                {(selectedFile || title || artist) && (
+                  <button
+                    type="button"
+                    onClick={handleResetAll}
+                    className={`px-3.5 py-3 rounded-2xl border font-bold text-xs flex items-center justify-center gap-1.5 transition-all hover:scale-105 shrink-0 active:scale-95 ${
+                      isLight
+                        ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-300'
+                        : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
+                    }`}
+                    title="Reset seluruh isian form"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset</span>
+                  </button>
+                )}
+
+                {/* Upload & Save Button */}
+                <button
+                  type="submit"
+                  disabled={isUploading || !selectedFile}
+                  className={`px-6 py-3 rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 shrink-0 ${
+                    isUploading || !selectedFile
+                      ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none'
+                      : 'bg-gold-500 hover:bg-gold-400 text-slate-950 hover:scale-105 shadow-gold-500/20'
+                  }`}
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>{isUploading ? 'Menyimpan...' : 'Simpan Lagu'}</span>
+                </button>
+              </div>
+
+              {/* Single file guidance hint */}
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 font-mono flex items-center gap-1">
+                <span>💡</span> Pengunggahan musik diproses satu per satu (single-file) untuk kalkulasi durasi audio yang presisi.
+              </p>
             </div>
           </form>
         </div>

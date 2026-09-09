@@ -94,6 +94,7 @@ export async function PUT(request: Request) {
       designConfig,
       events,
       digitalGifts,
+      slug,
     } = body;
 
     if (!id) {
@@ -129,6 +130,34 @@ export async function PUT(request: Request) {
       designConfig: cleanJSONString(designConfig),
       digitalGifts: cleanJSONString(digitalGifts),
     };
+
+    // Handle slug update & validate uniqueness
+    if (slug) {
+      const cleanSlug = String(slug)
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      if (cleanSlug) {
+        const conflict = await db.invitation.findFirst({
+          where: {
+            slug: cleanSlug,
+            NOT: { id },
+          },
+        });
+
+        if (conflict) {
+          return NextResponse.json(
+            { error: `Slug link "/${cleanSlug}" sudah digunakan oleh undangan lain. Silakan gunakan variasi nama lain.` },
+            { status: 400 }
+          );
+        }
+
+        updateData.slug = cleanSlug;
+      }
+    }
 
     // If user is logged in, ensure the invitation belongs to active session user (unless it's public demo 'andi-sinta')
     if (sessionUserId) {

@@ -23,6 +23,7 @@ import {
   Download,
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { getAppBaseUrl } from '@/utils/domain';
 import { downloadGuestTemplateCSV } from '@/utils/exportUtils';
 
 interface GuestEntry {
@@ -49,7 +50,7 @@ function ShareWaContent() {
 
   const groomPath = slugFromParam || getGroomFirstName(groomFullName);
 
-  const [baseUrl, setBaseUrl] = useState('https://weddora.com');
+  const [baseUrl, setBaseUrl] = useState(getAppBaseUrl());
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -297,25 +298,25 @@ function ShareWaContent() {
         <div className="lg:col-span-7 space-y-6">
           {/* Guest Stats Counter */}
           <div className="grid grid-cols-3 gap-4">
-            <div className={`p-4 rounded-2xl border space-y-1 ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
-              <span className="text-[11px] font-bold text-slate-400">Total Tamu</span>
-              <p className="text-2xl font-extrabold text-white flex items-center justify-between">
+            <div className={`p-4 rounded-2xl border space-y-1 ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-900 border-slate-800'}`}>
+              <span className={`text-[11px] font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Total Tamu</span>
+              <p className={`text-2xl font-extrabold flex items-center justify-between ${isLight ? 'text-slate-900' : 'text-white'}`}>
                 <span>{guests.length}</span>
-                <Users className="w-5 h-5 text-blue-400" />
+                <Users className="w-5 h-5 text-blue-500" />
               </p>
             </div>
-            <div className={`p-4 rounded-2xl border space-y-1 ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
-              <span className="text-[11px] font-bold text-slate-400">Sudah Terkirim</span>
-              <p className="text-2xl font-extrabold text-emerald-400 flex items-center justify-between">
+            <div className={`p-4 rounded-2xl border space-y-1 ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-900 border-slate-800'}`}>
+              <span className={`text-[11px] font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Sudah Terkirim</span>
+              <p className={`text-2xl font-extrabold flex items-center justify-between ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`}>
                 <span>{sentCount}</span>
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
               </p>
             </div>
-            <div className={`p-4 rounded-2xl border space-y-1 ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
-              <span className="text-[11px] font-bold text-slate-400">Belum Terkirim</span>
-              <p className="text-2xl font-extrabold text-amber-400 flex items-center justify-between">
+            <div className={`p-4 rounded-2xl border space-y-1 ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-900 border-slate-800'}`}>
+              <span className={`text-[11px] font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Belum Terkirim</span>
+              <p className={`text-2xl font-extrabold flex items-center justify-between ${isLight ? 'text-amber-600' : 'text-amber-400'}`}>
                 <span>{guests.length - sentCount}</span>
-                <Clock className="w-5 h-5 text-amber-400" />
+                <Clock className="w-5 h-5 text-amber-500" />
               </p>
             </div>
           </div>
@@ -447,16 +448,20 @@ function ShareWaContent() {
 
           {/* Guest Broadcaster Table */}
           <div className={`rounded-3xl border overflow-hidden shadow-xl ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div className={`p-4 border-b flex items-center justify-between ${isLight ? 'border-slate-200 bg-slate-50/60' : 'border-slate-800'}`}>
               <h3 className="font-bold text-xs flex items-center gap-2">
                 <Send className="w-4 h-4 text-emerald-500" />
-                <span>Daftar Tamu & Link Personalisasi ({guests.length})</span>
+                <span className={isLight ? 'text-slate-900' : 'text-white'}>Daftar Tamu & Link Personalisasi ({guests.length})</span>
               </h3>
               <button
                 onClick={handleCopyAllLinks}
-                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-[11px] border border-slate-700 flex items-center gap-1.5 transition-all"
+                className={`px-3 py-1.5 rounded-xl font-bold text-[11px] border flex items-center gap-1.5 transition-all ${
+                  isLight
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                }`}
               >
-                {copiedAllLinks ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedAllLinks ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedAllLinks ? 'Semua Link Tersalin!' : 'Salin Semua Link Tamu'}</span>
               </button>
             </div>
@@ -471,7 +476,7 @@ function ShareWaContent() {
                     className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer transition-colors ${
                       isSelected
                         ? isLight
-                          ? 'bg-emerald-50/80 border-l-4 border-emerald-500'
+                          ? 'bg-emerald-50/90 border-l-4 border-emerald-500'
                           : 'bg-slate-800/80 border-l-4 border-emerald-500'
                         : isLight
                         ? 'hover:bg-slate-50'
@@ -480,19 +485,27 @@ function ShareWaContent() {
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-mono text-slate-400">#{idx + 1}</span>
-                        <h4 className="font-bold text-xs text-white">{g.name}</h4>
+                        <span className={`text-[10px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>#{idx + 1}</span>
+                        <h4 className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>{g.name}</h4>
                         {g.status === 'TERKIRIM' ? (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 ${
+                            isLight
+                              ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
+                              : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                          }`}>
                             ✓ Terkirim
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-bold border border-amber-500/30">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            isLight
+                              ? 'bg-amber-100 text-amber-800 border-amber-300'
+                              : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                          }`}>
                             Belum
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] font-mono text-slate-400 truncate max-w-xs">
+                      <p className={`text-[11px] font-mono truncate max-w-xs ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                         {getGuestLink(g.name)}
                       </p>
                     </div>
@@ -504,7 +517,11 @@ function ShareWaContent() {
                           e.stopPropagation();
                           handleCopyLink(g.name);
                         }}
-                        className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
+                        className={`p-2 rounded-xl border transition-all ${
+                          isLight
+                            ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                        }`}
                         title="Salin Link"
                       >
                         <Copy className="w-3.5 h-3.5" />
@@ -528,7 +545,11 @@ function ShareWaContent() {
                           e.stopPropagation();
                           handleDeleteGuest(g.id);
                         }}
-                        className="p-2 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white border border-rose-500/20"
+                        className={`p-2 rounded-xl border transition-all ${
+                          isLight
+                            ? 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border-rose-200'
+                            : 'bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white border-rose-500/20'
+                        }`}
                         title="Hapus Tamu"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -545,7 +566,7 @@ function ShareWaContent() {
         <div className="lg:col-span-5 space-y-6">
           <div className={`p-6 rounded-3xl border space-y-5 shadow-xl ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-300">
+              <label className={`block text-xs font-bold ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
                 Pilih Gaya Bahasa Teks WhatsApp
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -577,12 +598,12 @@ function ShareWaContent() {
 
             {/* Live Personalized WhatsApp Text Preview */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between border-b pb-2 border-slate-200 dark:border-slate-800">
-                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <div className={`flex items-center justify-between border-b pb-2 ${isLight ? 'border-slate-200' : 'border-slate-800'}`}>
+                <span className={`text-xs font-bold flex items-center gap-1.5 ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
                   <Sparkles className="w-4 h-4" /> Live Preview Teks WhatsApp
                 </span>
-                <span className="text-[10px] font-mono text-slate-400">
-                  Tamu: <strong className="text-white">{activeGuest.name}</strong>
+                <span className={`text-[10px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                  Tamu: <strong className={isLight ? 'text-slate-900 font-bold' : 'text-white font-bold'}>{activeGuest.name}</strong>
                 </span>
               </div>
 
@@ -599,17 +620,25 @@ function ShareWaContent() {
                 <button
                   type="button"
                   onClick={() => handleCopyMsg(activeGuest.name)}
-                  className="py-3 px-3 rounded-xl font-bold text-xs border bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700 transition-all flex items-center justify-center gap-1.5"
+                  className={`py-3 px-3 rounded-xl font-bold text-xs border transition-all flex items-center justify-center gap-1.5 ${
+                    isLight
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                  }`}
                 >
-                  {copiedMsg ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  {copiedMsg ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                   <span>{copiedMsg ? 'Tersalin!' : 'Salin Teks Pesan'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCopyLink(activeGuest.name)}
-                  className="py-3 px-3 rounded-xl font-bold text-xs border bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700 transition-all flex items-center justify-center gap-1.5"
+                  className={`py-3 px-3 rounded-xl font-bold text-xs border transition-all flex items-center justify-center gap-1.5 ${
+                    isLight
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                  }`}
                 >
-                  {copiedLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  {copiedLink ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                   <span>{copiedLink ? 'Tersalin!' : 'Salin Link Tamu'}</span>
                 </button>
               </div>

@@ -1,11 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ScrollReveal } from '@/components/effects/ScrollReveal';
 import { db } from '@/lib/db';
 import { getCleanName } from '@/utils/nameUtils';
+import { getAppDomain } from '@/utils/domain';
 import {
   Sparkles,
   Plus,
@@ -22,6 +23,10 @@ import {
 export const revalidate = 0;
 
 export default async function DashboardPage() {
+  const headersList = headers();
+  const host = headersList.get('x-forwarded-host') || headersList.get('host');
+  const appDomain = getAppDomain(host);
+
   const cookieStore = cookies();
   const sessionUserId = cookieStore.get('weddora_session')?.value;
 
@@ -99,13 +104,47 @@ export default async function DashboardPage() {
       <Navbar />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-8">
+        {/* Demo Mode Notice Banner if role is DEMO */}
+        {user?.role === 'DEMO' && (
+          <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
+              <div>
+                <span className="font-bold block">✨ Mode Akun Demo / Uji Coba Aktif</span>
+                <span>Anda sedang mengeksplorasi dashboard dalam mode demo. Anda dapat mencoba studio editor dan kustomisasi undangan secara leluasa.</span>
+              </div>
+            </div>
+            <a
+              href="https://wa.me/6282278765076?text=Halo%20Admin%20Weddora%20VIP,%0A%0ASaya%20telah%20mencoba%20studio%20editor%20Weddora%20dan%20tertarik%20untuk%20mengaktifkan%20akun%20resmi%20undangan%20pernikahan%20kami.%0A%0AMohon%20panduan%20proses%20aktivasi%20dan%20opsi%20paket%20VIP-nya.%20Terima%20kasih!%20%F0%9F%99%8F%F0%9F%92%8D%E2%9C%A8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-2 rounded-xl bg-gold-500 hover:bg-gold-400 text-slate-950 font-extrabold text-[11px] shrink-0 shadow-md"
+            >
+              Aktivasi Akun Resmi &rarr;
+            </a>
+          </div>
+        )}
+
         {/* Header Profile Banner with ScrollReveal */}
         <ScrollReveal direction="up" delay={100}>
           <div className="bg-gradient-to-r from-gold-500/10 via-amber-500/10 to-slate-100 dark:to-slate-900 p-8 rounded-3xl border border-gold-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-xl">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-500/20 text-gold-600 dark:text-gold-400 text-xs font-bold border border-gold-500/30 uppercase">
-                <Crown className="w-3.5 h-3.5" />
-                <span>Paket {user?.package || 'PREMIUM'} VIP</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-500/20 text-gold-600 dark:text-gold-400 text-xs font-bold border border-gold-500/30 uppercase">
+                  <Crown className="w-3.5 h-3.5" />
+                  <span>Paket {user?.package || 'PREMIUM'} VIP</span>
+                </div>
+                {user?.role === 'DEMO' && (
+                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-extrabold border border-amber-500/40 uppercase">
+                    <Sparkles className="w-3 h-3" />
+                    <span>DEMO TRIAL</span>
+                  </div>
+                )}
+                {(user?.role === 'USER' || user?.role === 'CLIENT') && (
+                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-extrabold border border-emerald-500/40 uppercase">
+                    <span>AKUN KLIEN RESMI</span>
+                  </div>
+                )}
               </div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white font-playfair">
                 Selamat Datang, {user?.name || 'Client Pengantin'}!
@@ -189,7 +228,7 @@ export default async function DashboardPage() {
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gold-600 dark:text-gold-400 font-mono">domain.com/{inv.slug}</span>
+                        <span className="text-xs font-bold text-gold-600 dark:text-gold-400 font-mono">{appDomain}/{inv.slug}</span>
                         <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] uppercase">
                           ✓ Terpublikasi
                         </span>

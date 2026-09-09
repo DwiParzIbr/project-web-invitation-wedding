@@ -20,6 +20,7 @@ export async function GET() {
       id: u.id,
       name: u.name,
       email: u.email,
+      phone: u.phone,
       role: u.role,
       package: u.package,
       maxInvitations: u.maxInvitations,
@@ -39,7 +40,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, password, role, package: pkgTier } = body;
+    const { name, email, password, phone, invitationLinkName, role, package: pkgTier } = body;
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Nama, Email, dan Password wajib diisi' }, { status: 400 });
@@ -59,34 +60,107 @@ export async function POST(request: Request) {
       data: {
         name,
         email,
+        phone: phone ? phone.trim() : null,
         password,
-        role: role || 'CLIENT',
+        role: role || 'USER',
         package: userPackage,
         maxInvitations,
       },
+    });
+
+    // If invitationLinkName is provided, generate an initial invitation for this client
+    if (invitationLinkName && invitationLinkName.trim()) {
+      let slug = invitationLinkName
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+
+      if (!slug) {
+        slug = `undangan-${Date.now()}`;
+      }
+
+      // Ensure slug uniqueness
+      const existingSlug = await db.invitation.findUnique({ where: { slug } });
+      if (existingSlug) {
+        slug = `${slug}-${Math.floor(100 + Math.random() * 900)}`;
+      }
+
+      // Try to find a default template
+      const defaultTemplate =
+        (await db.template.findFirst({ where: { status: 'PUBLISHED' } })) ||
+        (await db.template.findFirst());
+
+      let groomName = 'Andi Pratama';
+      let brideName = 'Sinta Nurhaliza';
+      const cleanLinkName = invitationLinkName.trim();
+      const separators = [' dan ', ' & ', ' and ', ' with '];
+      let matched = false;
+      for (const sep of separators) {
+        if (cleanLinkName.toLowerCase().includes(sep)) {
+          const parts = cleanLinkName.split(new RegExp(sep, 'i'));
+          if (parts[0]?.trim()) groomName = parts[0].trim();
+          if (parts[1]?.trim()) brideName = parts[1].trim();
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        groomName = cleanLinkName;
+      }
+
+      if (defaultTemplate) {
+        await db.invitation.create({
+          data: {
+            userId: newUser.id,
+            templateId: defaultTemplate.id,
+            title: `Undangan ${cleanLinkName}`,
+            slug,
+            isPublished: true,
+            groomName,
+            groomParents: 'Keluarga Mempelai Pria',
+            brideName,
+            brideParents: 'Keluarga Mempelai Wanita',
+            weddingDate: new Date('2026-12-12T08:00:00.000Z'),
+            quoteText: 'Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan pasangan-pasangan untukmu...',
+            quoteSource: 'QS. Ar-Rum: 21',
+            designConfig: defaultTemplate.designSchema,
+            digitalGifts: JSON.stringify([
+              { bankName: 'Bank BCA', accountName: groomName, accountNumber: '8401928371' },
+            ]),
+          },
+        });
+      }
+    }
+
+    const createdClientWithInvs = await db.user.findUnique({
+      where: { id: newUser.id },
       include: {
         invitations: {
           select: { id: true, title: true, slug: true, isPublished: true, createdAt: true },
+          orderBy: { createdAt: 'desc' },
         },
       },
     });
 
     return NextResponse.json(
       {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        package: newUser.package,
-        maxInvitations: newUser.maxInvitations,
-        invitations: newUser.invitations || [],
-        invitationsCount: 0,
+        id: createdClientWithInvs!.id,
+        name: createdClientWithInvs!.name,
+        email: createdClientWithInvs!.email,
+        phone: createdClientWithInvs!.phone,
+        role: createdClientWithInvs!.role,
+        package: createdClientWithInvs!.package,
+        maxInvitations: createdClientWithInvs!.maxInvitations,
+        invitations: createdClientWithInvs!.invitations || [],
+        invitationsCount: createdClientWithInvs!.invitations?.length || 0,
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating client:', error);
-    return NextResponse.json({ error: 'Failed to create client' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Gagal membuat client baru' }, { status: 500 });
   }
 }
 
@@ -94,7 +168,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, name, email, role, package: pkgTier } = body;
+    const { id, name, email, phone, role, package: pkgTier } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
@@ -110,6 +184,7 @@ export async function PUT(request: Request) {
       data: {
         name,
         email,
+        phone: phone !== undefined ? (phone ? phone.trim() : null) : undefined,
         role,
         package: userPackage,
         maxInvitations,
@@ -125,6 +200,7 @@ export async function PUT(request: Request) {
       id: updatedUser.id,
       name: updatedUser.name,
       email: updatedUser.email,
+      phone: updatedUser.phone,
       role: updatedUser.role,
       package: updatedUser.package,
       maxInvitations: updatedUser.maxInvitations,

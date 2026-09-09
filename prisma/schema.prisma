@@ -11,6 +11,7 @@ model User {
   id             String       @id @default(uuid())
   email          String       @unique
   name           String
+  phone          String?
   password       String       @default("password123")
   role           String       @default("USER") // USER, ADMIN
   package        String       @default("PREMIUM") // PREMIUM, LUXURY

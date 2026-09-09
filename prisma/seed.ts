@@ -11,16 +11,20 @@ async function main() {
   await prisma.template.deleteMany({ where: { slug: 'navy-floral-officer' } });
   await prisma.category.deleteMany({ where: { slug: 'kedinasan' } });
 
-  // 1. Admin User
+  // 1. System Users (4 Roles)
+  // Super Admin
   const admin = await prisma.user.upsert({
     where: { email: 'admin@weddora.com' },
     update: {
+      name: 'Super Admin Weddora',
+      password: 'adminpassword',
+      role: 'ADMIN',
       package: 'LUXURY',
       maxInvitations: 999,
     },
     create: {
       email: 'admin@weddora.com',
-      name: 'Admin Weddora',
+      name: 'Super Admin Weddora',
       password: 'adminpassword',
       role: 'ADMIN',
       package: 'LUXURY',
@@ -28,20 +32,63 @@ async function main() {
     },
   });
 
-  // Demo Client User
-  const demoUser = await prisma.user.upsert({
-    where: { email: 'andi@example.com' },
+  // Dedicated Operator
+  const operator = await prisma.user.upsert({
+    where: { email: 'operator@weddora.com' },
     update: {
-      package: 'PREMIUM_AI',
-      maxInvitations: 10,
+      name: 'Staf Operator Weddora',
+      password: 'operatorpassword',
+      role: 'OPERATOR',
+      package: 'LUXURY',
+      maxInvitations: 100,
     },
     create: {
-      email: 'andi@example.com',
-      name: 'Andi Pratama & Sinta',
-      password: 'userpassword',
+      email: 'operator@weddora.com',
+      name: 'Staf Operator Weddora',
+      password: 'operatorpassword',
+      role: 'OPERATOR',
+      package: 'LUXURY',
+      maxInvitations: 100,
+    },
+  });
+
+  // Regular User Client
+  const clientUser = await prisma.user.upsert({
+    where: { email: 'dudububu@gmail.com' },
+    update: {
+      name: 'Dudu & Bubu (Client)',
+      password: 'password123',
       role: 'USER',
-      package: 'PREMIUM_AI',
-      maxInvitations: 10,
+      package: 'PREMIUM',
+      maxInvitations: 5,
+    },
+    create: {
+      email: 'dudububu@gmail.com',
+      name: 'Dudu & Bubu (Client)',
+      password: 'password123',
+      role: 'USER',
+      package: 'PREMIUM',
+      maxInvitations: 5,
+    },
+  });
+
+  // Demo Account
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'demo@weddora.com' },
+    update: {
+      name: 'Akun Demo Weddora',
+      password: 'demopassword',
+      role: 'DEMO',
+      package: 'PREMIUM',
+      maxInvitations: 3,
+    },
+    create: {
+      email: 'demo@weddora.com',
+      name: 'Akun Demo Weddora',
+      password: 'demopassword',
+      role: 'DEMO',
+      package: 'PREMIUM',
+      maxInvitations: 3,
     },
   });
 
@@ -66,62 +113,54 @@ async function main() {
     categoriesMap[cat.slug] = created.id;
   }
 
-  // 3. Audio Music Tracks (Westlife - Beautiful in White as Default)
+  // 3. Audio Music Tracks (Exclusively from public/uploads/music)
   const musicList = [
     {
-      title: 'Westlife - Beautiful in white Lyrics',
-      artist: 'Admin Collection',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-      duration: '3:30',
-      genre: 'Acoustic',
-      isRoyaltyFree: true,
-    },
-    {
-      title: 'Acoustic Wedding Romantic',
-      artist: 'Studio Harmony',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-      duration: '2:45',
-      genre: 'Acoustic',
-      isRoyaltyFree: true,
-    },
-    {
-      title: 'Romantic Piano Prelude',
-      artist: 'Elena Light',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8713f0c.mp3',
-      duration: '3:12',
-      genre: 'Piano Solo',
-      isRoyaltyFree: true,
-    },
-    {
-      title: 'Soft Islamic Harmony',
-      artist: 'Al-Madinah Ensemble',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_33b8a1c97a.mp3',
-      duration: '3:40',
-      genre: 'Islamic Instrument',
-      isRoyaltyFree: true,
-    },
-    {
-      title: 'Gentle String Quartet',
-      artist: 'Royal Strings',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
-      duration: '2:55',
-      genre: 'Classical',
-      isRoyaltyFree: true,
-    },
-    {
-      title: 'Sundanese Degung Wedding',
-      artist: 'Harapan Sunda',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      duration: '4:10',
-      genre: 'Traditional Degung',
-      isRoyaltyFree: true,
-    },
-    {
-      title: 'Javanese Gamelan Royal',
-      artist: 'Kraton Heritage',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+      title: 'Westlife - Beautiful in White',
+      artist: 'Westlife',
+      audioUrl: '/uploads/music/1788003073611_Westlife_-__Beautiful_in_white_Lyrics.mp3',
       duration: '3:50',
-      genre: 'Traditional Gamelan',
+      genre: 'Wedding Anthem',
+      isRoyaltyFree: true,
+    },
+    {
+      title: 'Christina Perri - A Thousand Years',
+      artist: 'Christina Perri',
+      audioUrl: '/uploads/music/1787996162038_Christina_Perri_-_A_Thousand_Years_Official_Music_Video.mp3',
+      duration: '4:45',
+      genre: 'Romantic Wedding',
+      isRoyaltyFree: true,
+    },
+    {
+      title: 'The Carpenters - Close To You',
+      artist: 'The Carpenters',
+      audioUrl: '/uploads/music/1787996157058_Carpenters_-_Close_to_you.mp3',
+      duration: '3:40',
+      genre: 'Classic Love',
+      isRoyaltyFree: true,
+    },
+    {
+      title: 'Alex Warren - Ordinary',
+      artist: 'Alex Warren',
+      audioUrl: '/uploads/music/1787996152443_Alex_Warren_-_Ordinary__Official_Video_.mp3',
+      duration: '3:10',
+      genre: 'Acoustic Pop',
+      isRoyaltyFree: true,
+    },
+    {
+      title: 'Feby Putri - Bernaung',
+      artist: 'Feby Putri',
+      audioUrl: '/uploads/music/1787996166919_Feby_Putri_-_Bernaung__From_Setetes_Embun_Cinta_Niyala__.mp3',
+      duration: '3:30',
+      genre: 'Indie Acoustic',
+      isRoyaltyFree: true,
+    },
+    {
+      title: 'Nadin Amizah - Di Akhir Perang',
+      artist: 'Nadin Amizah',
+      audioUrl: '/uploads/music/1788003105498_Nadin_Amizah_-_Di_Akhir_Perang__Official_Lyric_Video_.mp3',
+      duration: '3:58',
+      genre: 'Romantic Folk',
       isRoyaltyFree: true,
     },
   ];
@@ -574,7 +613,7 @@ async function main() {
       name: 'The Metro Love Express',
       slug: 'metro-love-express',
       categoryId: categoriesMap['modern'],
-      previewImage: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=800',
+      previewImage: '/templates/metro-love-express.jpg',
       price: 139000,
       tier: 'PREMIUM',
       status: 'PUBLISHED',

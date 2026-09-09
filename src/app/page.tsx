@@ -89,7 +89,7 @@ export default async function HomePage() {
                 </Link>
 
                 <Link
-                  href="/demo/luxury-gold-marble"
+                  href="/demo"
                   target="_blank"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white dark:bg-slate-900/90 border-2 border-gold-500/40 text-slate-900 dark:text-slate-100 hover:border-gold-500 font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-xl backdrop-blur-md"
                 >
@@ -107,7 +107,7 @@ export default async function HomePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-gold-500" />
-                  <span>AI Copywriting Suite</span>
+                  <span>Pilihan Kata Mutiara Indah</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-gold-500" />

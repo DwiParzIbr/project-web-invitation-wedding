@@ -20,13 +20,21 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle,
+  Phone,
+  Link2,
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { ScrollReveal } from '@/components/effects/ScrollReveal';
+import { getAppDomain } from '@/utils/domain';
 
 export default function AdminClientsPage() {
   const { mode } = useTheme();
   const isLight = mode === 'light';
+  const [appDomain, setAppDomain] = useState('weddora.web.id');
+
+  useEffect(() => {
+    setAppDomain(getAppDomain());
+  }, []);
 
   const [clients, setClients] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,10 +47,13 @@ export default function AdminClientsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<any | null>(null);
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [invitationLinkName, setInvitationLinkName] = useState('');
+  const [isLinkManuallyEdited, setIsLinkManuallyEdited] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('password123');
   const [selectedPackage, setSelectedPackage] = useState<'BASIC' | 'PREMIUM' | 'LUXURY'>('PREMIUM');
-  const [role, setRole] = useState<'CLIENT' | 'ADMIN'>('CLIENT');
+  const [role, setRole] = useState<'USER' | 'OPERATOR' | 'ADMIN' | 'DEMO'>('USER');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -77,10 +88,13 @@ export default function AdminClientsPage() {
   const openAddModal = () => {
     setEditingClient(null);
     setName('');
+    setPhone('');
+    setInvitationLinkName('');
+    setIsLinkManuallyEdited(false);
     setEmail('');
     setPassword('password123');
     setSelectedPackage('PREMIUM');
-    setRole('CLIENT');
+    setRole('USER');
     setErrorMsg('');
     setIsModalOpen(true);
   };
@@ -88,9 +102,13 @@ export default function AdminClientsPage() {
   const openEditModal = (client: any) => {
     setEditingClient(client);
     setName(client.name);
+    setPhone(client.phone || '');
+    setInvitationLinkName('');
+    setIsLinkManuallyEdited(false);
     setEmail(client.email);
     setSelectedPackage(client.package || 'PREMIUM');
-    setRole(client.role || 'CLIENT');
+    const r = client.role === 'CLIENT' ? 'USER' : client.role || 'USER';
+    setRole(r);
     setErrorMsg('');
     setIsModalOpen(true);
   };
@@ -109,6 +127,7 @@ export default function AdminClientsPage() {
           body: JSON.stringify({
             id: editingClient.id,
             name,
+            phone,
             email,
             role,
             package: selectedPackage,
@@ -131,6 +150,8 @@ export default function AdminClientsPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name,
+            phone,
+            invitationLinkName,
             email,
             password,
             role,
@@ -288,7 +309,7 @@ export default function AdminClientsPage() {
               }`}>
                 <tr>
                   <th className="px-6 py-4">Client / Pengantin</th>
-                  <th className="px-6 py-4">Email</th>
+                  <th className="px-6 py-4">Kontak & Email</th>
                   <th className="px-6 py-4">Paket Dipilih</th>
                   <th className="px-6 py-4">Undangan Dibuat</th>
                   <th className="px-6 py-4">Role Akses</th>
@@ -331,7 +352,23 @@ export default function AdminClientsPage() {
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 font-mono text-slate-400">{client.email}</td>
+                          <td className="px-6 py-4">
+                            <div className="font-mono text-xs text-slate-400">{client.email}</div>
+                            {client.phone ? (
+                              <a
+                                href={`https://wa.me/${client.phone.replace(/[^0-9]/g, '').replace(/^0/, '62')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline font-mono mt-1 font-semibold"
+                                title="Chat WhatsApp"
+                              >
+                                <Phone className="w-3 h-3 text-emerald-500" />
+                                <span>{client.phone}</span>
+                              </a>
+                            ) : (
+                              <span className="text-[10px] text-slate-500 italic block mt-0.5">No HP: -</span>
+                            )}
+                          </td>
                           <td className="px-6 py-4">
                             <span className={`px-2.5 py-1 rounded-full font-extrabold border uppercase text-[10px] ${
                               client.package === 'LUXURY'
@@ -347,13 +384,34 @@ export default function AdminClientsPage() {
                             {invList.length} / {client.maxInvitations >= 999 ? 'UNLIMITED' : `${client.maxInvitations}`}
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`px-2 py-0.5 rounded-full font-bold border text-[10px] ${
-                              client.role === 'ADMIN'
-                                ? isLight ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                                : isLight ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-slate-800 text-slate-400 border-slate-700'
-                            }`}>
-                              {client.role || 'CLIENT'}
-                            </span>
+                            {client.role === 'ADMIN' && (
+                              <span className={`px-2 py-0.5 rounded-full font-bold border text-[10px] ${
+                                isLight ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                              }`}>
+                                👑 ADMIN
+                              </span>
+                            )}
+                            {client.role === 'OPERATOR' && (
+                              <span className={`px-2 py-0.5 rounded-full font-bold border text-[10px] ${
+                                isLight ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                              }`}>
+                                🛠️ OPERATOR
+                              </span>
+                            )}
+                            {(client.role === 'USER' || client.role === 'CLIENT' || !client.role) && (
+                              <span className={`px-2 py-0.5 rounded-full font-bold border text-[10px] ${
+                                isLight ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                              }`}>
+                                💍 USER
+                              </span>
+                            )}
+                            {client.role === 'DEMO' && (
+                              <span className={`px-2 py-0.5 rounded-full font-bold border text-[10px] ${
+                                isLight ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                              }`}>
+                                ✨ DEMO
+                              </span>
+                            )}
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
@@ -436,7 +494,7 @@ export default function AdminClientsPage() {
                                             isLight ? 'text-amber-600' : 'text-gold-400'
                                           }`}
                                         >
-                                          <span>weddora.com/{inv.slug}</span>
+                                          <span>{appDomain}/{inv.slug}</span>
                                           <ExternalLink className="w-3 h-3 shrink-0" />
                                         </a>
                                       </div>
@@ -481,7 +539,7 @@ export default function AdminClientsPage() {
       {/* Modal Add / Edit Client */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl ${
+          <div className={`border rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl ${
             isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
           }`}>
             <div className={`flex items-center justify-between border-b pb-3 ${isLight ? 'border-slate-200' : 'border-slate-800'}`}>
@@ -507,11 +565,65 @@ export default function AdminClientsPage() {
                   type="text"
                   required
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (!isLinkManuallyEdited && !editingClient) {
+                      setInvitationLinkName(e.target.value);
+                    }
+                  }}
                   placeholder="Andi & Sinta"
                   className={`w-full border rounded-xl p-2.5 ${isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'}`}
                 />
               </div>
+
+              <div>
+                <label className={`block mb-1 font-semibold flex items-center justify-between ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
+                  <span className="flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                    Nomor WhatsApp / HP Client
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-normal">Contoh: 081234567890</span>
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="081234567890"
+                  className={`w-full border rounded-xl p-2.5 font-mono ${isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'}`}
+                />
+              </div>
+
+              {!editingClient && (
+                <div>
+                  <label className={`block mb-1 font-semibold flex items-center justify-between ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
+                    <span className="flex items-center gap-1.5">
+                      <Link2 className="w-3.5 h-3.5 text-gold-500" />
+                      Nama untuk Link Undangan
+                    </span>
+                    <span className="text-[10px] text-gold-500 font-medium">misal: Fajar dan Putri</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={invitationLinkName}
+                    onChange={(e) => {
+                      setIsLinkManuallyEdited(true);
+                      setInvitationLinkName(e.target.value);
+                    }}
+                    placeholder="misal: Fajar dan Putri"
+                    className={`w-full border rounded-xl p-2.5 ${isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'}`}
+                  />
+                  {invitationLinkName.trim() && (
+                    <div className={`mt-1.5 px-3 py-1.5 rounded-xl text-[11px] font-mono border flex items-center gap-2 ${
+                      isLight ? 'bg-gold-50 border-gold-300 text-amber-900' : 'bg-gold-500/10 border-gold-500/30 text-gold-300'
+                    }`}>
+                      <span className="text-slate-400 font-sans text-[10px]">Preview Link:</span>
+                      <span className="font-bold">
+                        {appDomain}/{invitationLinkName.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Email Client</label>
@@ -560,8 +672,10 @@ export default function AdminClientsPage() {
                   onChange={(e: any) => setRole(e.target.value)}
                   className={`w-full border rounded-xl p-2.5 font-semibold ${isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'}`}
                 >
-                  <option value="CLIENT">Client Regular</option>
-                  <option value="ADMIN">Super Admin</option>
+                  <option value="USER">💍 USER (Klien Pengantin)</option>
+                  <option value="OPERATOR">🛠️ OPERATOR (Staf Operasional)</option>
+                  <option value="DEMO">✨ DEMO (Akun Uji Coba)</option>
+                  <option value="ADMIN">👑 ADMIN (Super Admin)</option>
                 </select>
               </div>
 

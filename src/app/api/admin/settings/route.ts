@@ -2,17 +2,20 @@ import { NextResponse } from 'next/server';
 import { writeFile, readFile, mkdir } from 'fs/promises';
 import path from 'path';
 
+import { cookies } from 'next/headers';
+import { db } from '@/lib/db';
+
 export const dynamic = 'force-dynamic';
 
 const settingsFilePath = path.join(process.cwd(), 'public', 'uploads', 'platform-settings.json');
 
 const defaultSettings = {
-  siteName: 'Weddora AI Wedding Builder',
+  siteName: 'Weddora Wedding Platform',
   siteLogo: '/logo.png',
   maintenanceMode: false,
   freeTierLimit: 0, // Free tier eliminated
-  aiModelDefault: 'Gemini 3.6 Flash / Weddora AI Engine',
-  supportWhatsapp: '6281234567890',
+  aiModelDefault: 'Weddora Smart Designer Engine',
+  supportWhatsapp: '6282278765076',
   qrisMerchantName: 'WEDDORA DIGITAL INVITATION',
   midtransClientKey: 'SB-Mid-client-XXXXXX',
   midtransServerKey: 'SB-Mid-server-XXXXXX',
@@ -36,6 +39,17 @@ export async function GET() {
 // POST update platform settings
 export async function POST(request: Request) {
   try {
+    const cookieStore = cookies();
+    const userId = cookieStore.get('weddora_session')?.value;
+    if (userId) {
+      const user = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
+      if (user && user.role === 'OPERATOR') {
+        return NextResponse.json(
+          { error: 'Akses ditolak: Hanya Super Admin yang berwenang mengubah pengaturan sistem.' },
+          { status: 403 }
+        );
+      }
+    }
     const body = await request.json();
     const current = await getStoredSettings();
     const updated = { ...current, ...body };

@@ -448,7 +448,7 @@ export const RenderInvitationView: React.FC<RenderInvitationViewProps> = ({
   const getAudioSourceUrl = () => {
     return (
       invitation.music?.audioUrl ||
-      'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3'
+      '/uploads/music/1788003073611_Westlife_-__Beautiful_in_white_Lyrics.mp3'
     );
   };
 
@@ -1731,7 +1731,7 @@ export const RenderInvitationView: React.FC<RenderInvitationViewProps> = ({
                 Merupakan Suatu Kehormatan & Kebahagiaan Bagi Kami Apabila Bapak/Ibu/Saudara/i Berkenan Hadir dan Memberikan Doa Restu.
               </p>
               <div className="pt-4 text-[10px] text-slate-600 font-mono">
-                Powered by Weddora AI VIP • Wedding Invitation
+                Powered by Weddora VIP • Exclusive Wedding Invitation
               </div>
             </footer>
           </ScrollReveal>

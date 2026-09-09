@@ -1,10 +1,32 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
+};
+
 export const metadata: Metadata = {
-  title: 'Weddora AI - AI Wedding Website Designer & Template Marketplace',
-  description: 'Platform AI Wedding Invitation Builder premium. Buat website undangan pernikahan digital tanpa coding dengan bantuan kecerdasan buatan, musik, RSVP, dan fitur eksklusif.',
+  title: 'Weddora - Exclusive Digital Wedding Invitation & Template Marketplace',
+  description: 'Platform pembuatan website undangan pernikahan digital eksklusif dan mewah. Dilengkapi musik MP3 kustom, amplop digital, form RSVP tamu, Google Maps, dan desain berkelas untuk hari bahagia Anda.',
+  keywords: ['undangan pernikahan digital', 'wedding invitation', 'undangan website', 'weddora', 'undangan online', 'undangan mewah'],
+  authors: [{ name: 'Weddora' }],
+  openGraph: {
+    title: 'Weddora - Exclusive Digital Wedding Invitation',
+    description: 'Platform pembuatan website undangan pernikahan digital eksklusif dan mewah. Dilengkapi musik MP3 kustom, amplop digital, RSVP tamu, dan desain berkelas.',
+    url: 'https://weddora.web.id',
+    siteName: 'Weddora',
+    locale: 'id_ID',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Weddora - Exclusive Digital Wedding Invitation',
+    description: 'Platform pembuatan website undangan pernikahan digital eksklusif dan mewah.',
+  },
   icons: {
     icon: '/logo.png',
     shortcut: '/logo.png',

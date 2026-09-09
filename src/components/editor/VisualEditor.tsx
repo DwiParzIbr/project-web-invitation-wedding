@@ -47,7 +47,22 @@ import {
   CalendarDays,
   Compass,
   MessageCircle,
+  X,
+  Link2,
 } from 'lucide-react';
+import { getAppDomain } from '@/utils/domain';
+
+export const ALL_EDITOR_TABS = [
+  { id: 'couple', name: 'Pengantin', icon: User, desc: 'Mempelai pria & wanita, orang tua & foto' },
+  { id: 'layout', name: 'Interaksi & Layout', icon: LayoutTemplate, desc: 'Model navigasi, cover & bottom dock' },
+  { id: 'theme', name: 'Font & Background', icon: Type, desc: 'Tipografi font, siluet & video HP 9:16' },
+  { id: 'canvas', name: 'Tema & Bentuk', icon: Palette, desc: 'Warna tema, sudut kartu, border & preset' },
+  { id: 'story', name: 'Story', icon: Heart, desc: 'Timeline perjalanan cinta mempelai' },
+  { id: 'photos', name: 'Galeri & Video', icon: ImageIcon, desc: 'Album prewedding & video YouTube' },
+  { id: 'music', name: 'Musik MP3', icon: Music, desc: 'Pilihan lagu & potong detik mulai' },
+  { id: 'events', name: 'Acara', icon: MapPin, desc: 'Akad, resepsi, waktu & link Google Maps' },
+  { id: 'gifts', name: 'Gift', icon: Gift, desc: 'Rekening amplop digital & alamat kado' },
+];
 
 interface VisualEditorProps {
   initialInvitation: any;
@@ -62,11 +77,29 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
   const { mode, toggleTheme } = useTheme();
   const isLight = mode === 'light';
 
-  // Active Tab: 'couple' | 'theme' | 'story' | 'photos' | 'music' | 'events' | 'gifts'
+  // Active Tab & View Mode for Mobile
   const [activeTab, setActiveTab] = useState<string>('couple');
-  const [deviceType, setDeviceType] = useState<'iphone' | 'android' | 'desktop'>('iphone');
+  const [mobileViewMode, setMobileViewMode] = useState<'edit' | 'preview'>('edit');
+  const [isMenuDrawerOpen, setIsMenuDrawerOpen] = useState(false);
+  const tabsContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const [deviceType, setDeviceType] = useState<'iphone' | 'desktop'>('iphone');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Auto-scroll tab button into view when active tab changes
+  React.useEffect(() => {
+    const activeEl = document.getElementById(`tab-btn-${activeTab}`);
+    if (activeEl && tabsContainerRef.current) {
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [activeTab]);
+
+  const handleSelectTab = (tabId: string) => {
+    setActiveTab(tabId);
+    setIsMenuDrawerOpen(false);
+    setMobileViewMode('edit');
+  };
 
   // AI Assistant Modal State
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -95,6 +128,31 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
   const [quoteText, setQuoteText] = useState(initialInvitation.quoteText || '');
   const [quoteSource, setQuoteSource] = useState(initialInvitation.quoteSource || '');
   const [selectedMusicId, setSelectedMusicId] = useState(initialInvitation.musicId || (musicList[0]?.id || ''));
+
+  const [slug, setSlug] = useState(initialInvitation.slug || '');
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(
+    Boolean(initialInvitation.slug && !initialInvitation.slug.startsWith('undangan-'))
+  );
+  const [appDomain, setAppDomain] = useState('weddora.web.id');
+
+  React.useEffect(() => {
+    setAppDomain(getAppDomain());
+  }, []);
+
+  const generateCleanSlug = (gName: string, bName: string) => {
+    const cleanG = getCleanName(gName)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]/g, '');
+    const cleanB = getCleanName(bName)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]/g, '');
+    if (cleanG && cleanB) return `${cleanG}-dan-${cleanB}`;
+    if (cleanG) return cleanG;
+    if (cleanB) return cleanB;
+    return `undangan-${Date.now()}`;
+  };
 
   // Probe real audio duration for all tracks
   React.useEffect(() => {
@@ -294,6 +352,7 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: initialInvitation.id,
+          slug,
           groomName,
           groomParents,
           groomPhoto,
@@ -317,9 +376,19 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
       });
 
       if (res.ok) {
+        const data = await res.json();
         setSaveSuccess(true);
+        if (data.invitation?.slug) {
+          setSlug(data.invitation.slug);
+          if (typeof window !== 'undefined' && !window.location.pathname.endsWith(`/${data.invitation.slug}`)) {
+            window.history.replaceState(null, '', `/editor/${data.invitation.slug}`);
+          }
+        }
         router.refresh();
         setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Gagal menyimpan perubahan');
       }
     } catch (e) {
       console.error(e);
@@ -437,34 +506,64 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
   };
 
   return (
-    <div className={`h-screen flex flex-col font-sans select-none ${
+    <div className={`h-[100dvh] flex flex-col font-sans select-none overflow-hidden ${
       isLight ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'
     }`}>
       {/* Top Main Navigation Bar Header */}
-      <header className={`px-4 py-3 border-b flex items-center justify-between shrink-0 z-30 ${
+      <header className={`px-2.5 sm:px-4 py-2 sm:py-3 border-b flex items-center justify-between shrink-0 z-30 ${
         isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'
       }`}>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={() => router.back()}
-            className={`p-2 rounded-xl border transition-colors ${
+            className={`p-2 rounded-xl border transition-colors shrink-0 ${
               isLight ? 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
             }`}
             title="Kembali"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <div>
-            <h1 className="text-sm font-bold flex items-center gap-1.5">
-              <span>{initialInvitation.title || 'Studio Visual Editor'}</span>
+          <div className="min-w-0">
+            <h1 className="text-xs sm:text-sm font-bold flex items-center gap-1.5 truncate max-w-[120px] sm:max-w-[200px] md:max-w-xs">
+              <span className="truncate">{initialInvitation.title || 'Studio Visual Editor'}</span>
             </h1>
-            <span className="text-[10px] text-slate-400 font-mono block">
-              {initialInvitation?.isMasterTemplate ? 'Mode Master Template Administrator' : `Slug URL: /${initialInvitation.slug}`}
+            <span className="text-[9px] sm:text-[10px] text-slate-400 font-mono block truncate max-w-[120px] sm:max-w-[200px]">
+              {initialInvitation?.isMasterTemplate ? 'Mode Master Template' : `/${slug || initialInvitation.slug}`}
             </span>
           </div>
         </div>
 
-        {/* CENTER DEVICE PREVIEW SELECTOR TOGGLE BUTTONS */}
+        {/* CENTER MOBILE VIEW TOGGLE: [ ✏️ Edit ] vs [ 👁️ Pratinjau ] */}
+        <div className={`flex md:hidden items-center p-0.5 rounded-xl border shrink-0 mx-1 ${
+          isLight ? 'bg-slate-100 border-slate-300' : 'bg-slate-950/80 border-slate-800'
+        }`}>
+          <button
+            onClick={() => setMobileViewMode('edit')}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              mobileViewMode === 'edit'
+                ? 'bg-gold-500 text-slate-950 shadow-md font-black'
+                : isLight
+                ? 'text-slate-600 hover:text-slate-900'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>✏️ Edit</span>
+          </button>
+          <button
+            onClick={() => setMobileViewMode('preview')}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              mobileViewMode === 'preview'
+                ? 'bg-gold-500 text-slate-950 shadow-md font-black'
+                : isLight
+                ? 'text-slate-600 hover:text-slate-900'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>👁️ Pratinjau</span>
+          </button>
+        </div>
+
+        {/* CENTER DESKTOP DEVICE PREVIEW SELECTOR TOGGLE BUTTONS */}
         <div className="hidden md:flex items-center gap-1 p-1 rounded-xl bg-slate-950/80 border border-slate-800">
           <button
             onClick={() => setDeviceType('iphone')}
@@ -476,15 +575,6 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
             <span>📱 iPhone 15 Pro</span>
           </button>
           <button
-            onClick={() => setDeviceType('android')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
-              deviceType === 'android' ? 'bg-gold-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
-            }`}
-            title="Tampilan Android / Samsung"
-          >
-            <span>📱 Android</span>
-          </button>
-          <button
             onClick={() => setDeviceType('desktop')}
             className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
               deviceType === 'desktop' ? 'bg-gold-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
@@ -494,18 +584,18 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
             <span>🖥️ Mode Website</span>
           </button>
           <a
-            href={initialInvitation?.isMasterTemplate ? `/demo/${initialInvitation.slug}` : `/${initialInvitation.slug}`}
+            href={initialInvitation?.isMasterTemplate ? `/demo/${slug || initialInvitation.slug}` : `/${slug || initialInvitation.slug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-300 hover:text-gold-400 transition-colors flex items-center gap-1 border border-slate-700 hover:border-gold-500/40"
             title="Buka Halaman Live Demo"
           >
             <Globe className="w-3.5 h-3.5 text-gold-400" />
-            <span>{initialInvitation?.isMasterTemplate ? `Buka Demo (/demo/${initialInvitation.slug})` : 'Buka Web Demo'}</span>
+            <span>{initialInvitation?.isMasterTemplate ? `Buka Demo (/demo/${slug || initialInvitation.slug})` : 'Buka Web Demo'}</span>
           </a>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={toggleTheme}
             className={`p-2 rounded-xl border transition-colors ${
@@ -518,19 +608,28 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
 
           <button
             onClick={() => setIsAiModalOpen(true)}
-            className="px-3 py-1.5 rounded-xl gold-shimmer-btn text-slate-950 font-extrabold text-xs shadow-lg flex items-center gap-1.5 hover:scale-105 transition-transform"
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl gold-shimmer-btn text-slate-950 font-extrabold text-xs shadow-lg flex items-center gap-1.5 hover:scale-105 transition-transform"
+            title="Buka Studio Smart Designer"
           >
             <Sparkles className="w-4 h-4 text-slate-950" />
-            <span>AI Design Engine</span>
+            <span className="hidden sm:inline">Smart Designer</span>
           </button>
 
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="px-4 py-1.5 rounded-xl bg-gold-500 hover:bg-gold-400 text-slate-950 font-extrabold text-xs shadow-lg transition-all flex items-center gap-1.5"
+            className="px-3 sm:px-4 py-1.5 rounded-xl bg-gold-500 hover:bg-gold-400 text-slate-950 font-extrabold text-xs shadow-lg transition-all flex items-center gap-1.5 shrink-0"
           >
             <Save className="w-4 h-4 text-slate-950" />
-            <span>{isSaving ? 'Menyimpan...' : saveSuccess ? '✓ Tersimpan!' : initialInvitation.isMasterTemplate ? '👑 Simpan Perubahan Master' : 'Simpan Perubahan'}</span>
+            <span>
+              {isSaving
+                ? 'Menyimpan...'
+                : saveSuccess
+                ? '✓ Tersimpan!'
+                : initialInvitation.isMasterTemplate
+                ? 'Simpan Master'
+                : 'Simpan'}
+            </span>
           </button>
         </div>
       </header>
@@ -544,96 +643,46 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
       )}
 
       {/* Main Workspace Split View */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Left Control Sidebar Panel */}
         <div className={`w-full md:w-[440px] border-r flex flex-col shrink-0 z-20 transition-colors ${
+          mobileViewMode === 'preview' ? 'hidden md:flex' : 'flex'
+        } ${
           isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-800 text-slate-200'
         }`}>
           {/* Navigation Control Tabs Header */}
-          <div className={`p-2 border-b flex items-center gap-1.5 overflow-x-auto scrollbar-none text-xs font-bold ${
+          <div className={`p-2 border-b flex items-center relative text-xs font-bold shrink-0 ${
             isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950/80 border-slate-800'
           }`}>
-            <button
-              onClick={() => setActiveTab('couple')}
-              className={`px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-                activeTab === 'couple' ? 'bg-gold-500/20 text-gold-500 border border-gold-500/30' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
+            {/* Scrollable Tabs */}
+            <div
+              ref={tabsContainerRef}
+              className="flex-1 flex items-center gap-1.5 overflow-x-auto scrollbar-thin scroll-smooth py-0.5 px-1"
             >
-              <User className="w-3.5 h-3.5" />
-              Pengantin
-            </button>
-            <button
-              onClick={() => setActiveTab('layout')}
-              className={`px-3 py-2 rounded-lg font-bold flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-                activeTab === 'layout' ? 'bg-gold-500/20 text-gold-500 border border-gold-500/30' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <LayoutTemplate className="w-3.5 h-3.5 text-gold-400" />
-              Interaksi & Layout
-            </button>
-            <button
-              onClick={() => setActiveTab('theme')}
-              className={`px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-                activeTab === 'theme' ? 'bg-gold-500/20 text-gold-500 border border-gold-500/30' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Type className="w-3.5 h-3.5" />
-              Font & Background
-            </button>
-            <button
-              onClick={() => setActiveTab('canvas')}
-              className={`px-3 py-2 rounded-lg font-bold flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-                activeTab === 'canvas' ? 'bg-gold-500/20 text-gold-500 border border-gold-500/30' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Palette className="w-3.5 h-3.5 text-gold-400" />
-              Tema & Bentuk
-            </button>
-            <button
-              onClick={() => setActiveTab('story')}
-              className={`px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-                activeTab === 'story' ? 'bg-gold-500/20 text-gold-500 border border-gold-500/30' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Heart className="w-3.5 h-3.5" />
-              Story
-            </button>
-            <button
-              onClick={() => setActiveTab('photos')}
-              className={`px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-                activeTab === 'photos' ? 'bg-gold-500/20 text-gold-500 border border-gold-500/30' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <ImageIcon className="w-3.5 h-3.5" />
-              Galeri & Video
-            </button>
-            <button
-              onClick={() => setActiveTab('music')}
-              className={`px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-                activeTab === 'music' ? 'bg-gold-500/20 text-gold-500 border border-gold-500/30' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Music className="w-3.5 h-3.5" />
-              Musik MP3
-            </button>
-            <button
-              onClick={() => setActiveTab('events')}
-              className={`px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-                activeTab === 'events' ? 'bg-gold-500/20 text-gold-500 border border-gold-500/30' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <MapPin className="w-3.5 h-3.5" />
-              Acara
-            </button>
-            <button
-              onClick={() => setActiveTab('gifts')}
-              className={`px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-                activeTab === 'gifts' ? 'bg-gold-500/20 text-gold-500 border border-gold-500/30' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Gift className="w-3.5 h-3.5" />
-              Gift
-            </button>
+              {ALL_EDITOR_TABS.map((tab) => {
+                const IconComponent = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    id={`tab-btn-${tab.id}`}
+                    onClick={() => handleSelectTab(tab.id)}
+                    className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 whitespace-nowrap transition-all shrink-0 text-xs ${
+                      isActive
+                        ? isLight
+                          ? 'bg-gold-500/15 text-gold-700 border border-gold-500/40 ring-1 ring-gold-500/20 shadow-sm'
+                          : 'bg-gold-500/20 text-gold-400 border border-gold-500/40 ring-1 ring-gold-500/20 shadow-sm'
+                        : isLight
+                        ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                    }`}
+                  >
+                    <IconComponent className={`w-3.5 h-3.5 ${isActive ? (isLight ? 'text-gold-600' : 'text-gold-400') : (isLight ? 'text-slate-500' : 'text-slate-400')}`} />
+                    <span>{tab.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Editor Form Controls Body */}
@@ -1037,12 +1086,62 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                   </div>
                 </div>
 
+                {/* Link & URL Slug Undangan */}
+                <div className={`p-4 rounded-2xl border transition-colors ${
+                  isLight ? 'bg-amber-50/70 border-amber-300/80 shadow-sm' : 'bg-gold-500/10 border-gold-500/30'
+                }`}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className={`text-xs font-bold flex items-center gap-1.5 ${
+                      isLight ? 'text-amber-950' : 'text-gold-300'
+                    }`}>
+                      <Link2 className="w-4 h-4 text-gold-500" />
+                      Link / URL Slug Undangan
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const auto = generateCleanSlug(groomName, brideName);
+                        setSlug(auto);
+                        setIsSlugManuallyEdited(false);
+                      }}
+                      className="text-[10px] text-amber-600 dark:text-gold-400 hover:underline font-semibold"
+                      title="Buat slug otomatis dari nama mempelai pria & wanita"
+                    >
+                      ↻ Sinkronkan dengan Nama
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => {
+                      setIsSlugManuallyEdited(true);
+                      setSlug(e.target.value.toLowerCase().trim().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-'));
+                    }}
+                    placeholder="misal: bagas-dan-clarissa"
+                    className={`w-full border rounded-xl p-2.5 font-mono text-xs focus:border-gold-500 focus:outline-none ${
+                      isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
+                    }`}
+                  />
+                  <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                    <span>Preview Link:</span>
+                    <span className="font-mono font-bold text-amber-600 dark:text-gold-400">
+                      {appDomain}/{slug || 'nama-undangan'}
+                    </span>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-slate-500 dark:text-slate-400 mb-1">Nama Pria (Groom)</label>
                   <input
                     type="text"
                     value={groomName}
-                    onChange={(e) => setGroomName(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setGroomName(val);
+                      if (!isSlugManuallyEdited || slug.startsWith('undangan-')) {
+                        setSlug(generateCleanSlug(val, brideName));
+                      }
+                    }}
                     className={`w-full border rounded-xl p-2.5 focus:border-gold-500 focus:outline-none ${
                       isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
                     }`}
@@ -1071,7 +1170,7 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                       type="text"
                       value={groomPhoto}
                       onChange={(e) => setGroomPhoto(e.target.value)}
-                      className={`flex-1 border rounded-xl p-2.5 font-mono text-[11px] focus:border-gold-500 focus:outline-none ${
+                      className={`flex-1 min-w-0 border rounded-xl p-2.5 font-mono text-[11px] focus:border-gold-500 focus:outline-none ${
                         isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
                       }`}
                     />
@@ -1125,7 +1224,13 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                   <input
                     type="text"
                     value={brideName}
-                    onChange={(e) => setBrideName(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBrideName(val);
+                      if (!isSlugManuallyEdited || slug.startsWith('undangan-')) {
+                        setSlug(generateCleanSlug(groomName, val));
+                      }
+                    }}
                     className={`w-full border rounded-xl p-2.5 focus:border-gold-500 focus:outline-none ${
                       isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
                     }`}
@@ -1154,7 +1259,7 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                       type="text"
                       value={bridePhoto}
                       onChange={(e) => setBridePhoto(e.target.value)}
-                      className={`flex-1 border rounded-xl p-2.5 font-mono text-[11px] focus:border-gold-500 focus:outline-none ${
+                      className={`flex-1 min-w-0 border rounded-xl p-2.5 font-mono text-[11px] focus:border-gold-500 focus:outline-none ${
                         isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
                       }`}
                     />
@@ -1210,7 +1315,7 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                       type="text"
                       value={coverPhoto}
                       onChange={(e) => setCoverPhoto(e.target.value)}
-                      className={`flex-1 border rounded-xl p-2.5 font-mono text-[11px] focus:border-gold-500 focus:outline-none ${
+                      className={`flex-1 min-w-0 border rounded-xl p-2.5 font-mono text-[11px] focus:border-gold-500 focus:outline-none ${
                         isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
                       }`}
                     />
@@ -1223,7 +1328,7 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                     />
                     <label
                       htmlFor="upload-cover-photo"
-                      className="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-gold-500 hover:text-slate-950 text-slate-200 font-bold text-[11px] cursor-pointer flex items-center gap-1 border border-slate-700"
+                      className="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-gold-500 hover:text-slate-950 text-slate-200 font-bold text-[11px] cursor-pointer flex items-center gap-1 border border-slate-700 shrink-0"
                     >
                       <Upload className="w-3.5 h-3.5" /> Upload
                     </label>
@@ -1768,7 +1873,7 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                                   backgroundVideoUrl: e.target.value,
                                 })
                               }
-                              placeholder="https://domain.com/video-prewedding-9-16.mp4"
+                              placeholder="https://weddora.web.id/video-prewedding-9-16.mp4"
                               className={`w-full border rounded-xl p-2 text-xs font-mono text-gold-400 ${
                                 isLight ? 'bg-white border-slate-300' : 'bg-slate-900 border-slate-800'
                               }`}
@@ -2544,7 +2649,7 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                   <div key={idx} className={`flex items-center gap-2 p-2 border rounded-xl ${
                     isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950 border-slate-800'
                   }`}>
-                    <img src={url} alt={`Photo ${idx}`} className="w-10 h-10 rounded object-cover" />
+                    <img src={url} alt={`Photo ${idx}`} className="w-10 h-10 rounded object-cover shrink-0" />
                     <input
                       type="text"
                       value={url}
@@ -2553,7 +2658,7 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                         next[idx] = e.target.value;
                         setGalleryPhotos(next);
                       }}
-                      className={`flex-1 border rounded p-1.5 font-mono text-[11px] ${
+                      className={`flex-1 min-w-0 border rounded p-1.5 font-mono text-[11px] ${
                         isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
                       }`}
                     />
@@ -2572,14 +2677,14 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                     />
                     <label
                       htmlFor={`upload-gallery-${idx}`}
-                      className="p-1.5 rounded-lg bg-slate-800 text-slate-200 cursor-pointer"
+                      className="p-2 rounded-lg bg-slate-800 text-slate-200 cursor-pointer shrink-0"
                       title="Upload Foto Ini"
                     >
                       <Upload className="w-3.5 h-3.5" />
                     </label>
                     <button
                       onClick={() => setGalleryPhotos(galleryPhotos.filter((_, i) => i !== idx))}
-                      className="text-rose-500 hover:text-rose-400 p-1"
+                      className="text-rose-500 hover:text-rose-400 p-1.5 shrink-0"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -2924,7 +3029,7 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                   <div key={idx} className={`p-3 border rounded-xl space-y-2 relative ${
                     isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950 border-slate-800'
                   }`}>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 justify-between">
                       <input
                         type="text"
                         placeholder="Nama Bank / Kado Fisik"
@@ -2934,13 +3039,13 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                           next[idx].bankName = e.target.value;
                           setDigitalGifts(next);
                         }}
-                        className={`w-full border rounded p-2 font-bold ${
+                        className={`flex-1 min-w-0 border rounded p-2 font-bold ${
                           isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
                         }`}
                       />
                       <button
                         onClick={() => setDigitalGifts(digitalGifts.filter((_, i) => i !== idx))}
-                        className="text-rose-500 hover:text-rose-400 p-1 ml-2"
+                        className="text-rose-500 hover:text-rose-400 p-1.5 shrink-0"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -2978,17 +3083,164 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
               </div>
             )}
           </div>
+
+          {/* MOBILE STICKY BOTTOM QUICK ACTION BAR */}
+          <div className={`md:hidden p-3 border-t flex items-center justify-end shrink-0 z-20 backdrop-blur-md transition-colors duration-300 ${
+            isLight ? 'bg-white/95 border-slate-200' : 'bg-slate-900/95 border-slate-800'
+          }`}>
+            <button
+              onClick={() => setIsMenuDrawerOpen(true)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold text-xs border shadow-sm active:scale-95 transition-all ${
+                isLight
+                  ? 'bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-300 shadow-slate-200/50'
+                  : 'bg-slate-800 hover:bg-slate-700 text-gold-400 border-slate-700 shadow-black/20'
+              }`}
+            >
+              <Layers className={`w-3.5 h-3.5 ${isLight ? 'text-gold-600' : 'text-gold-500'}`} />
+              <span>Ganti Menu ({ALL_EDITOR_TABS.find(t => t.id === activeTab)?.name})</span>
+            </button>
+          </div>
         </div>
 
         {/* Right Mobile Live Device Preview Viewport */}
-        <div className={`flex-1 overflow-hidden flex items-center justify-center p-4 transition-colors duration-300 ${
+        <div className={`flex-1 overflow-hidden flex items-center justify-center p-0 md:p-4 transition-colors duration-300 relative ${
+          mobileViewMode === 'edit' ? 'hidden md:flex' : 'flex'
+        } ${
           isLight ? 'bg-slate-200' : 'bg-slate-950'
         }`}>
           <MobileDeviceFrame deviceType={deviceType} onDeviceTypeChange={setDeviceType}>
             <RenderInvitationView invitation={liveInvitationData} isPreview={true} />
           </MobileDeviceFrame>
+
+          {/* Floating Action Buttons for Mobile Live Preview */}
+          {mobileViewMode === 'preview' && (
+            <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2">
+              <button
+                onClick={() => setMobileViewMode('edit')}
+                className="px-4 py-2.5 rounded-full bg-gold-500 hover:bg-gold-400 text-slate-950 font-black text-xs shadow-2xl flex items-center gap-2 border-2 border-slate-900 active:scale-95 transition-all"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Kembali ke Menu Edit</span>
+              </button>
+              <a
+                href={initialInvitation?.isMasterTemplate ? `/demo/${initialInvitation.slug}` : `/${initialInvitation.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2.5 rounded-full bg-slate-900/90 hover:bg-slate-800 text-gold-400 border border-slate-700 shadow-2xl active:scale-95 transition-all"
+                title="Buka Website Tab Baru"
+              >
+                <Globe className="w-4 h-4" />
+              </a>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ALL MENUS QUICK DRAWER MODAL */}
+      {isMenuDrawerOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+          <div className={`w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl p-5 max-h-[85vh] flex flex-col transition-colors duration-300 border ${
+            isLight
+              ? 'bg-white border-slate-200 text-slate-800'
+              : 'bg-slate-900 border-slate-800 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between pb-3 border-b mb-4 shrink-0 ${
+              isLight ? 'border-slate-200' : 'border-slate-800'
+            }`}>
+              <div className="flex items-center gap-2.5">
+                <div className={`p-2 rounded-xl border ${
+                  isLight
+                    ? 'bg-gold-50 text-gold-600 border-gold-200'
+                    : 'bg-gold-500/20 text-gold-400 border-gold-500/30'
+                }`}>
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className={`font-bold text-sm ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    Semua Menu Editor Undangan
+                  </h3>
+                  <p className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Pilih bagian yang ingin Anda ubah atau lengkapi:
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsMenuDrawerOpen(false)}
+                className={`p-2 rounded-xl transition-colors ${
+                  isLight
+                    ? 'bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200'
+                    : 'bg-slate-800 text-slate-400 hover:text-white'
+                }`}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 overflow-y-auto pr-1">
+              {ALL_EDITOR_TABS.map((tab) => {
+                const IconComponent = tab.icon;
+                const isSelected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleSelectTab(tab.id)}
+                    className={`p-3 rounded-2xl border text-left flex items-start gap-3 transition-all ${
+                      isSelected
+                        ? isLight
+                          ? 'bg-gold-50 border-gold-500 text-gold-900 ring-2 ring-gold-400/30'
+                          : 'bg-gold-500/20 border-gold-500 text-gold-300 ring-2 ring-gold-500/40'
+                        : isLight
+                        ? 'bg-slate-50 border-slate-200 hover:border-gold-400 text-slate-700 hover:bg-slate-100'
+                        : 'bg-slate-950/70 border-slate-800 hover:border-gold-500/40 text-slate-300'
+                    }`}
+                  >
+                    <div className={`p-2 rounded-xl shrink-0 ${
+                      isSelected
+                        ? 'bg-gold-500 text-slate-950'
+                        : isLight
+                        ? 'bg-slate-200 text-slate-700'
+                        : 'bg-slate-800 text-gold-400'
+                    }`}>
+                      <IconComponent className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-xs flex items-center gap-1.5">
+                        <span className="truncate">{tab.name}</span>
+                        {isSelected && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-gold-400 text-slate-950 font-black">
+                            Aktif
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-[10px] mt-0.5 line-clamp-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                        {tab.desc}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className={`mt-4 pt-3 border-t flex justify-between items-center text-xs shrink-0 ${
+              isLight ? 'border-slate-200' : 'border-slate-800'
+            }`}>
+              <span className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                Total {ALL_EDITOR_TABS.length} Menu Pengaturan
+              </span>
+              <button
+                onClick={() => setIsMenuDrawerOpen(false)}
+                className={`px-4 py-2 rounded-xl font-bold transition-all text-xs ${
+                  isLight
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+                }`}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI Assistant Modal */}
       <AiAssistantModal

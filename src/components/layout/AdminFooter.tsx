@@ -44,7 +44,7 @@ export function AdminFooter() {
           isLight ? 'text-slate-500' : 'text-slate-500'
         }`}>
           <div>
-            &copy; {new Date().getFullYear()} Weddora AI Platform. All rights reserved. Reserved for Authorized Superadmin Users.
+            &copy; {new Date().getFullYear()} Weddora Platform. All rights reserved. Reserved for Authorized Superadmin Users.
           </div>
 
           <div className={`flex items-center gap-4 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>

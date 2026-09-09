@@ -122,8 +122,27 @@ export default async function EditorPage({ params }: EditorPageProps) {
     // Get template-specific couple details (with or without titles)
     const couple = getTemplateCouple(template.slug);
 
-    // Create a unique draft invitation slug from template FOR THE ACTIVE LOGGED-IN USER
-    const newSlug = `undangan-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    // Create a clean, meaningful invitation slug from couple names
+    const cleanGroom = getCleanName(couple.groomName)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]/g, '');
+    const cleanBride = getCleanName(couple.brideName)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]/g, '');
+
+    let baseSlug = (cleanGroom && cleanBride)
+      ? `${cleanGroom}-dan-${cleanBride}`
+      : `undangan-${Date.now()}`;
+
+    let newSlug = baseSlug;
+    let counter = 1;
+    while (await db.invitation.findUnique({ where: { slug: newSlug } })) {
+      counter++;
+      newSlug = `${baseSlug}-${counter}`;
+    }
+
     invitation = await db.invitation.create({
       data: {
         userId: activeUser.id,

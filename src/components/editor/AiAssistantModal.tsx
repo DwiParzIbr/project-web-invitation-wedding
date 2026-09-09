@@ -109,100 +109,100 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] text-slate-100">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh] text-slate-100">
         {/* Header */}
-        <div className="bg-slate-950 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-purple-600 via-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/20">
-              <Sparkles className="w-5 h-5 animate-pulse" />
+        <div className="bg-slate-950 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-800 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-purple-600 via-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/20 shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 h-5 animate-pulse" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold font-playfair text-white flex items-center gap-2">
-                Weddora AI Designer Suite 3.0
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-lg font-bold font-playfair text-white flex items-center gap-2 truncate">
+                Weddora Studio Designer Suite
               </h2>
-              <p className="text-xs text-slate-400">Asisten kecerdasan buatan untuk rancangan desain, isi undangan & rundown</p>
+              <p className="text-[10px] sm:text-xs text-slate-400 truncate">Asisten cerdas rancangan desain, isi undangan & rundown</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800/80 hover:bg-slate-700 transition-colors"
+            className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800/80 hover:bg-slate-700 transition-colors shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex border-b border-slate-800 bg-slate-950/60 px-4 sm:px-6 text-xs font-bold overflow-x-auto">
+        <div className="flex border-b border-slate-800 bg-slate-950/60 px-2 sm:px-6 text-xs font-bold overflow-x-auto scrollbar-none shrink-0">
           <button
             onClick={() => setActiveTab('design')}
-            className={`py-3.5 px-3.5 border-b-2 flex items-center gap-2 transition-all shrink-0 ${
+            className={`py-3 px-3 border-b-2 flex items-center gap-1.5 transition-all shrink-0 ${
               activeTab === 'design'
                 ? 'border-purple-500 text-purple-400 bg-purple-500/10'
                 : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
             <Wand2 className="w-4 h-4" />
-            AI Design Schema
+            <span>Studio Desain</span>
           </button>
 
           <button
             onClick={() => setActiveTab('copywriting')}
-            className={`py-3.5 px-3.5 border-b-2 flex items-center gap-2 transition-all shrink-0 ${
+            className={`py-3 px-3 border-b-2 flex items-center gap-1.5 transition-all shrink-0 ${
               activeTab === 'copywriting'
                 ? 'border-purple-500 text-purple-400 bg-purple-500/10'
                 : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
             <FileText className="w-4 h-4" />
-            AI Copywriting & WA
+            <span>Kata Mutiara & WA</span>
           </button>
 
           <button
             onClick={() => setActiveTab('magic')}
-            className={`py-3.5 px-3.5 border-b-2 flex items-center gap-2 transition-all shrink-0 ${
+            className={`py-3 px-3 border-b-2 flex items-center gap-1.5 transition-all shrink-0 ${
               activeTab === 'magic'
                 ? 'border-purple-500 text-purple-400 bg-purple-500/10'
                 : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
             <Layers className="w-4 h-4" />
-            Magic Score ({score.overall}/100)
+            <span>Quality Score ({score.overall})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('replies')}
-            className={`py-3.5 px-3.5 border-b-2 flex items-center gap-2 transition-all shrink-0 ${
+            className={`py-3 px-3 border-b-2 flex items-center gap-1.5 transition-all shrink-0 ${
               activeTab === 'replies'
                 ? 'border-purple-500 text-purple-400 bg-purple-500/10'
                 : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
             <HeartHandshake className="w-4 h-4" />
-            AI Auto-Reply Doa
+            <span>Balas Doa</span>
           </button>
 
           <button
             onClick={() => setActiveTab('rundown')}
-            className={`py-3.5 px-3.5 border-b-2 flex items-center gap-2 transition-all shrink-0 ${
+            className={`py-3 px-3 border-b-2 flex items-center gap-1.5 transition-all shrink-0 ${
               activeTab === 'rundown'
                 ? 'border-purple-500 text-purple-400 bg-purple-500/10'
                 : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
             <Calendar className="w-4 h-4" />
-            AI Rundown Acara
+            <span>Rundown</span>
           </button>
         </div>
 
         {/* Tab Content */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-slate-300">
-          {/* TAB 1: AI DESIGN SCHEMA */}
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 flex-1 text-slate-300">
+          {/* TAB 1: STUDIO DESIGN SCHEMA */}
           {activeTab === 'design' && (
             <div className="space-y-5">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                  1. Pilih Preset Gaya Desain AI Instan:
+                  1. Pilih Preset Gaya Desain Eksklusif:
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {presets.map((preset) => (
@@ -225,7 +225,7 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
 
               <div className="space-y-2">
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
-                  2. Atau Tulis Prompt Konsep Bebas:
+                  2. Atau Tulis Konsep Desain:
                 </label>
                 <textarea
                   value={designPrompt}
@@ -243,12 +243,12 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
                 {isGeneratingDesign ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>AI Sedang Merancang Skema Warna & Font...</span>
+                    <span>Sedang Merancang Skema Warna & Font...</span>
                   </>
                 ) : (
                   <>
                     <Wand2 className="w-4 h-4" />
-                    <span>Generate AI Design Schema</span>
+                    <span>Terapkan Skema Desain Studio</span>
                   </>
                 )}
               </button>
@@ -256,7 +256,7 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
               {previewSchema && (
                 <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3.5 animate-fadeIn">
                   <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4" /> Preview Skema Warna & Tipografi AI:
+                    <Sparkles className="w-4 h-4" /> Preview Skema Warna & Tipografi:
                   </h4>
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="flex items-center gap-2 bg-slate-900 p-2.5 rounded-xl border border-slate-800">
@@ -470,10 +470,10 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
                 </div>
               </div>
 
-              {/* AI Diagnostic Recommendations */}
+              {/* Diagnostic Recommendations */}
               <div className="space-y-2.5">
                 <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4" /> Hasil Diagnosis AI & Saran Optimasi:
+                  <Sparkles className="w-4 h-4" /> Hasil Analisis Desain & Saran Optimasi:
                 </h4>
                 <ul className="space-y-2 text-xs text-slate-300">
                   {score.recommendations.map((rec, i) => (
@@ -485,7 +485,7 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
                 </ul>
               </div>
 
-              {/* AI Interactive Optimization Actions */}
+              {/* Interactive Optimization Actions */}
               <div className="space-y-3 pt-2">
                 <button
                   onClick={handleAutoImproveDesign}
@@ -513,12 +513,12 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
             </div>
           )}
 
-          {/* TAB 4: AI AUTO-REPLY DOA & UCAPAN */}
+          {/* TAB 4: TEMPLATE BALAS DOA & UCAPAN */}
           {activeTab === 'replies' && (
             <div className="space-y-4">
               <div className="space-y-1">
                 <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
-                  <HeartHandshake className="w-4 h-4" /> AI Auto-Reply Generator Ucapan & RSVP
+                  <HeartHandshake className="w-4 h-4" /> Template Generator Balas Ucapan & Doa RSVP
                 </h3>
                 <p className="text-xs text-slate-400">
                   Template balasan santun & ramah dari pengantin untuk membalas ucapan selamat dari tamu di WhatsApp atau buku tamu:
@@ -552,13 +552,13 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
             </div>
           )}
 
-          {/* TAB 5: AI RUNDOWN EVENT PLANNER */}
+          {/* TAB 5: RUNDOWN EVENT PLANNER */}
           {activeTab === 'rundown' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
-                    <Calendar className="w-4 h-4" /> AI Wedding Event Rundown Planner
+                    <Calendar className="w-4 h-4" /> Wedding Event Rundown Planner
                   </h3>
                   <p className="text-xs text-slate-400">
                     Rancangan susunan acara & rundown waktu akad nikah hingga resepsi pernikahan:

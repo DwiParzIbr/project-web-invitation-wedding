@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Menu, X, Heart, Palette, ChevronRight, User, LogIn, LogOut, Sun, Moon, ShieldCheck, Crown } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { getRandomDemoUrl } from '@/utils/demoUtils';
 
 export const Navbar = () => {
   const router = useRouter();
@@ -55,13 +56,29 @@ export const Navbar = () => {
             <Palette className="w-4 h-4 text-gold-500" />
             Template Gallery
           </Link>
-          <Link href="/#pricing" className="hover:text-gold-500 transition-colors">
-            Harga & Paket
-          </Link>
-          <Link href="/demo/luxury-gold-marble" target="_blank" className="hover:text-gold-500 transition-colors text-amber-500 font-semibold flex items-center gap-1">
-            <Heart className="w-4 h-4 fill-amber-400/20" />
-            Demo Undangan
-          </Link>
+
+          {!user && (
+            <>
+              <Link href="/#pricing" className="hover:text-gold-500 transition-colors">
+                Harga & Paket
+              </Link>
+              <a
+                href="/demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const targetUrl = getRandomDemoUrl();
+                  window.open(targetUrl, '_blank');
+                }}
+                className="hover:text-gold-500 transition-colors text-amber-500 font-semibold flex items-center gap-1 cursor-pointer"
+                title="Buka Demo Undangan Acak"
+              >
+                <Heart className="w-4 h-4 fill-amber-400/20" />
+                <span>Demo Undangan</span>
+              </a>
+            </>
+          )}
 
           {user && (
             <Link href="/dashboard" className="hover:text-gold-500 transition-colors flex items-center gap-1">
@@ -70,9 +87,9 @@ export const Navbar = () => {
             </Link>
           )}
 
-          {user?.role === 'ADMIN' && (
+          {(user?.role === 'ADMIN' || user?.role === 'OPERATOR') && (
             <Link href="/admin" className="hover:text-amber-500 transition-colors text-xs text-amber-500 font-bold bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" /> Admin Panel
+              <ShieldCheck className="w-3.5 h-3.5" /> {user?.role === 'OPERATOR' ? 'Operator Panel' : 'Admin Panel'}
             </Link>
           )}
         </nav>
@@ -106,7 +123,7 @@ export const Navbar = () => {
                 <span className={`font-bold text-xs block ${isLight ? 'text-slate-900' : 'text-white'}`}>{user.name}</span>
                 <span className="text-[10px] text-gold-500 font-mono font-bold uppercase flex items-center gap-0.5 justify-end">
                   <Crown className="w-3 h-3 text-gold-500" />
-                  <span>{user.package} VIP</span>
+                  <span>{user.role} VIP</span>
                 </span>
               </div>
               <button
@@ -123,19 +140,10 @@ export const Navbar = () => {
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className={`px-3.5 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1.5 ${
-                  isLight ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-                }`}
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Masuk</span>
-              </Link>
-              <Link
-                href="/register"
                 className="px-4 py-2 text-xs font-bold rounded-xl text-slate-950 gold-metallic-bg hover:scale-105 shadow-md shadow-gold-500/20 transition-all flex items-center gap-1.5"
               >
-                <span>Daftar Client</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Masuk Akun</span>
               </Link>
             </div>
           )}
@@ -170,21 +178,33 @@ export const Navbar = () => {
           >
             Template Gallery
           </Link>
-          <Link
-            href="/#pricing"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 hover:text-gold-500"
-          >
-            Harga & Paket
-          </Link>
-          <Link
-            href="/demo/luxury-gold-marble"
-            target="_blank"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-amber-500"
-          >
-            Demo Undangan Live
-          </Link>
+
+          {!user && (
+            <>
+              <Link
+                href="/#pricing"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 hover:text-gold-500"
+              >
+                Harga & Paket
+              </Link>
+              <a
+                href="/demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  const targetUrl = getRandomDemoUrl();
+                  window.open(targetUrl, '_blank');
+                }}
+                className="block py-2 text-amber-500 cursor-pointer flex items-center gap-1.5"
+              >
+                <Heart className="w-4 h-4 fill-amber-400/20" />
+                <span>Demo Undangan Live</span>
+              </a>
+            </>
+          )}
 
           {user ? (
             <>
@@ -195,13 +215,13 @@ export const Navbar = () => {
               >
                 Dashboard Client ({user.name})
               </Link>
-              {user.role === 'ADMIN' && (
+              {(user.role === 'ADMIN' || user.role === 'OPERATOR') && (
                 <Link
                   href="/admin"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-2 text-purple-500"
                 >
-                  Admin Panel
+                  {user.role === 'OPERATOR' ? 'Operator Panel' : 'Admin Panel'}
                 </Link>
               )}
               <button
@@ -215,20 +235,14 @@ export const Navbar = () => {
               </button>
             </>
           ) : (
-            <div className="pt-2 grid grid-cols-2 gap-2">
+            <div className="pt-2">
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`py-2.5 text-center font-bold rounded-xl block ${isLight ? 'bg-slate-100 text-slate-900' : 'bg-slate-800 text-white'}`}
+                className="w-full py-2.5 text-center font-bold rounded-xl bg-gold-500 text-slate-950 flex items-center justify-center gap-2 shadow-md"
               >
-                Masuk
-              </Link>
-              <Link
-                href="/register"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-2.5 text-center font-bold rounded-xl bg-gold-500 text-slate-950 block"
-              >
-                Daftar Client
+                <LogIn className="w-4 h-4" />
+                <span>Masuk Akun</span>
               </Link>
             </div>
           )}

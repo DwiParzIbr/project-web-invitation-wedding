@@ -12,10 +12,10 @@ export default function AdminSettingsPage() {
   const { mode } = useTheme();
   const isLight = mode === 'light';
 
-  const [siteName, setSiteName] = useState('Weddora AI Wedding Builder');
+  const [siteName, setSiteName] = useState('Weddora Wedding Platform');
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [aiModelDefault, setAiModelDefault] = useState('Gemini 3.6 Flash / Weddora AI Engine');
-  const [supportWhatsapp, setSupportWhatsapp] = useState('6281234567890');
+  const [aiModelDefault, setAiModelDefault] = useState('Weddora Smart Designer Engine');
+  const [supportWhatsapp, setSupportWhatsapp] = useState('6282278765076');
   const [qrisMerchantName, setQrisMerchantName] = useState('WEDDORA DIGITAL INVITATION');
   const [midtransClientKey, setMidtransClientKey] = useState('SB-Mid-client-XXXXXX');
   const [midtransServerKey, setMidtransServerKey] = useState('SB-Mid-server-XXXXXX');
@@ -23,8 +23,16 @@ export default function AdminSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('ADMIN');
 
   useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user?.role) setCurrentUserRole(data.user.role);
+      })
+      .catch(() => {});
+
     fetch('/api/admin/settings')
       .then((res) => res.json())
       .then((data) => {
@@ -45,7 +53,7 @@ export default function AdminSettingsPage() {
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-
+    
     try {
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
@@ -89,10 +97,20 @@ export default function AdminSettingsPage() {
               Platform Settings & Configuration
             </h1>
             <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-              Pengaturan global sistem, integrasi AI, gerbang pembayaran Midtrans/QRIS, dan layanan bantuan WhatsApp.
+              Pengaturan global sistem, asisten tata letak dan desain, gerbang pembayaran Midtrans/QRIS, dan layanan bantuan WhatsApp.
             </p>
           </div>
         </ScrollReveal>
+
+        {currentUserRole === 'OPERATOR' && (
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs flex items-center gap-3">
+            <Shield className="w-5 h-5 shrink-0" />
+            <div>
+              <span className="font-bold block">Akses Terbatas: Operator Read-Only</span>
+              <span>Anda login sebagai Staf Operator. Konfigurasi payment gateway, API keys, dan parameter sistem hanya dapat diubah oleh Super Admin.</span>
+            </div>
+          </div>
+        )}
 
         <ScrollReveal direction="up" delay={200} duration={800}>
           <form onSubmit={handleSaveSettings} className={`rounded-3xl border p-6 sm:p-8 space-y-6 shadow-xl text-xs ${
@@ -143,7 +161,7 @@ export default function AdminSettingsPage() {
                 </div>
 
                 <div>
-                  <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Model AI Default Engine</label>
+                  <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Smart Design Engine</label>
                   <input
                     type="text"
                     value={aiModelDefault}
@@ -228,11 +246,15 @@ export default function AdminSettingsPage() {
 
                 <button
                   type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-bold shadow-lg shadow-purple-500/20 flex items-center gap-2 transition-all"
+                  disabled={isSaving || currentUserRole === 'OPERATOR'}
+                  className={`px-6 py-3 rounded-xl font-bold shadow-lg flex items-center gap-2 transition-all ${
+                    currentUserRole === 'OPERATOR'
+                      ? 'bg-slate-400 dark:bg-slate-800 text-slate-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white shadow-purple-500/20'
+                  }`}
                 >
                   <Save className="w-4 h-4" />
-                  <span>{isSaving ? 'Menyimpan...' : 'Simpan Pengaturan Platform'}</span>
+                  <span>{currentUserRole === 'OPERATOR' ? 'Akses Terbatas (Read-Only)' : isSaving ? 'Menyimpan...' : 'Simpan Pengaturan Platform'}</span>
                 </button>
               </div>
             </>

@@ -123,7 +123,18 @@ export default async function DemoTemplatePage({
   const guestName = searchParams.to || 'Bapak/Ibu/Saudara/i';
 
   return (
-    <main className="min-h-screen bg-slate-950 flex justify-center">
+    <main className="min-h-screen bg-slate-950 flex justify-center relative">
+      {/* Floating Quick Demo Switcher on Desktop */}
+      <div className="fixed top-4 right-4 z-[9999] hidden sm:flex items-center gap-2">
+        <a
+          href="/demo"
+          className="px-4 py-2 rounded-full bg-slate-900/95 hover:bg-slate-800 text-gold-400 hover:text-gold-300 border border-gold-500/40 text-xs font-bold shadow-2xl backdrop-blur-md flex items-center gap-2 transition-all hover:scale-105"
+          title="Buka Demo Template Acak Lainnya"
+        >
+          <span>🎲 Coba Demo Template Lain</span>
+        </a>
+      </div>
+
       <div className="w-full max-w-md bg-slate-950 min-h-screen shadow-2xl relative overflow-hidden border-x border-slate-900">
         <RenderInvitationView invitation={demoInvitation} guestName={guestName} />
       </div>
