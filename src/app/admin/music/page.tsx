@@ -1,0 +1,329 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { AdminNavbar } from '@/components/layout/AdminNavbar';
+import { AdminFooter } from '@/components/layout/AdminFooter';
+import { DeleteConfirmModal } from '@/components/ui/DeleteConfirmModal';
+import { Music, ArrowLeft, Upload, CheckCircle, Play, Pause, Trash2, Disc } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
+import { ScrollReveal } from '@/components/effects/ScrollReveal';
+import { getAudioDurationFromFile } from '@/utils/nameUtils';
+
+export default function AdminMusicPage() {
+  const { mode } = useTheme();
+  const isLight = mode === 'light';
+
+  const [musicTracks, setMusicTracks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [title, setTitle] = useState('');
+  const [artist, setArtist] = useState('');
+  const [genre, setGenre] = useState('Acoustic');
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [audioObj, setAudioObj] = useState<HTMLAudioElement | null>(null);
+
+  // Delete Modal State
+  const [deletingTrack, setDeletingTrack] = useState<any | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Fetch music tracks on load
+  const loadMusicList = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/admin/music');
+      if (res.ok) {
+        const data = await res.json();
+        setMusicTracks(data);
+      }
+    } catch (err) {
+      console.error('Failed to load music list:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMusicList();
+    return () => {
+      if (audioObj) {
+        audioObj.pause();
+      }
+    };
+  }, []);
+
+  const handlePlayPause = (track: any) => {
+    if (playingId === track.id) {
+      if (audioObj) {
+        audioObj.pause();
+      }
+      setPlayingId(null);
+    } else {
+      if (audioObj) {
+        audioObj.pause();
+      }
+      const newAudio = new Audio(track.audioUrl);
+      newAudio.play().catch((err) => console.error('Audio play error:', err));
+      newAudio.onended = () => setPlayingId(null);
+      setAudioObj(newAudio);
+      setPlayingId(track.id);
+    }
+  };
+
+  const handleUploadMusic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fileInput = document.getElementById('music-file-input') as HTMLInputElement;
+    const file = fileInput?.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      // 1. Upload to /api/upload
+      const uploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadData.url) throw new Error('Upload failed');
+
+      const realDuration = await getAudioDurationFromFile(file);
+
+      // 2. Create in DB /api/admin/music
+      const dbRes = await fetch('/api/admin/music', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title || file.name.replace(/\.[^/.]+$/, ''),
+          artist: artist || 'Admin Collection',
+          audioUrl: uploadData.url,
+          duration: realDuration,
+          genre,
+          isRoyaltyFree: true,
+        }),
+      });
+
+      if (dbRes.ok) {
+        const newTrack = await dbRes.json();
+        setMusicTracks([newTrack, ...musicTracks]);
+        setUploadSuccess(true);
+        setTitle('');
+        setArtist('');
+        setTimeout(() => setUploadSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error('Upload Error:', err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const confirmDeleteMusic = async () => {
+    if (!deletingTrack) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/music?id=${deletingTrack.id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setMusicTracks(musicTracks.filter((m) => m.id !== deletingTrack.id));
+        setDeletingTrack(null);
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
+      isLight ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'
+    }`}>
+      <AdminNavbar />
+
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-8">
+        <ScrollReveal direction="down" duration={600}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <Link href="/admin" className="text-xs text-gold-500 flex items-center gap-1 hover:underline mb-2 font-bold">
+                <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Admin Dashboard
+              </Link>
+              <h1 className={`text-3xl font-bold font-playfair flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                <Music className="w-7 h-7 text-blue-400" />
+                Music Library & Upload Manager ({musicTracks.length})
+              </h1>
+              <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                Upload file audio MP3 baru ke database platform Weddora untuk dijadikan musik latar undangan client.
+              </p>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        {/* Upload Form Box */}
+        <ScrollReveal direction="up" delay={150} duration={700}>
+          <div className={`p-6 border rounded-3xl space-y-4 shadow-xl ${
+            isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'
+          }`}>
+          <h2 className={`text-sm font-bold flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+            <Upload className="w-4 h-4 text-gold-500" /> Upload File MP3 Baru ke Database
+          </h2>
+
+          {uploadSuccess && (
+            <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-500" />
+              <span>File MP3 berhasil diupload dan disimpan secara permanen ke database!</span>
+            </div>
+          )}
+
+          <form onSubmit={handleUploadMusic} className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div>
+              <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Judul Lagu</label>
+              <input
+                type="text"
+                placeholder="misal: Beautiful in White"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={`w-full border rounded-xl p-2.5 ${isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'}`}
+              />
+            </div>
+
+            <div>
+              <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Penyanyi / Artis</label>
+              <input
+                type="text"
+                placeholder="misal: Westlife"
+                value={artist}
+                onChange={(e) => setArtist(e.target.value)}
+                className={`w-full border rounded-xl p-2.5 ${isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'}`}
+              />
+            </div>
+
+            <div>
+              <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Genre Musik</label>
+              <select
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
+                className={`w-full border rounded-xl p-2.5 ${isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'}`}
+              >
+                <option value="Acoustic">Acoustic</option>
+                <option value="Piano Solo">Piano Solo</option>
+                <option value="Romantic Pop">Romantic Pop</option>
+                <option value="Islamic Instrument">Islamic Instrument</option>
+                <option value="Classical">Classical</option>
+                <option value="Traditional Degung">Traditional Degung</option>
+                <option value="Traditional Gamelan">Traditional Gamelan</option>
+              </select>
+            </div>
+
+            <div className="sm:col-span-3 flex flex-col sm:flex-row items-center gap-4 pt-2">
+              <input
+                type="file"
+                id="music-file-input"
+                accept="audio/mp3,audio/*"
+                required
+                className={`text-xs p-2 border rounded-xl w-full sm:w-auto ${isLight ? 'bg-slate-50 border-slate-300' : 'bg-slate-950 border-slate-800'}`}
+              />
+              <button
+                type="submit"
+                disabled={isUploading}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gold-500 hover:bg-gold-400 text-slate-950 font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                <span>{isUploading ? 'Uploading & Saving to DB...' : 'Simpan Lagu ke Database'}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+        </ScrollReveal>
+
+        {/* Music List Table */}
+        <ScrollReveal direction="up" delay={250} duration={800}>
+          <div className={`rounded-3xl border overflow-hidden shadow-xl ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
+          <div className="overflow-x-auto">
+            <table className={`w-full text-left text-xs ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
+              <thead className={`uppercase font-semibold text-[10px] tracking-wider border-b ${
+                isLight ? 'bg-slate-50 text-slate-600 border-slate-200' : 'bg-slate-950 text-slate-400 border-slate-800'
+              }`}>
+                <tr>
+                  <th className="px-6 py-4">Preview</th>
+                  <th className="px-6 py-4">Judul Lagu</th>
+                  <th className="px-6 py-4">Artis</th>
+                  <th className="px-6 py-4">Genre</th>
+                  <th className="px-6 py-4">Durasi</th>
+                  <th className="px-6 py-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className={`divide-y ${isLight ? 'divide-slate-200' : 'divide-slate-800'}`}>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                      Memuat koleksi musik dari database...
+                    </td>
+                  </tr>
+                ) : musicTracks.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                      Belum ada lagu terdaftar di database.
+                    </td>
+                  </tr>
+                ) : (
+                  musicTracks.map((m) => (
+                    <tr key={m.id} className={isLight ? 'hover:bg-slate-50' : 'hover:bg-slate-800/50'}>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handlePlayPause(m)}
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all border ${
+                            playingId === m.id
+                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 animate-pulse'
+                              : 'bg-gold-500/20 text-gold-500 border-gold-500/30 hover:bg-gold-500 hover:text-slate-950'
+                          }`}
+                          title={playingId === m.id ? 'Pause Preview' : 'Play Preview'}
+                        >
+                          {playingId === m.id ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                        </button>
+                      </td>
+                      <td className={`px-6 py-4 font-bold text-sm flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        <Disc className="w-4 h-4 text-purple-400" />
+                        <span>{m.title}</span>
+                      </td>
+                      <td className="px-6 py-4">{m.artist || '-'}</td>
+                      <td className="px-6 py-4 font-semibold text-gold-500">{m.genre || 'Acoustic'}</td>
+                      <td className="px-6 py-4 font-mono">{m.duration || '3:30'}</td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => setDeletingTrack(m)}
+                          className="p-2 rounded-xl bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white transition-all border border-rose-500/30"
+                          title="Hapus Lagu dari Database"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        </ScrollReveal>
+      </main>
+
+      {/* Modern Animated Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={!!deletingTrack}
+        onClose={() => setDeletingTrack(null)}
+        onConfirm={confirmDeleteMusic}
+        title="Hapus Lagu dari Database"
+        itemName={deletingTrack?.title}
+        description="Apakah Anda yakin ingin menghapus lagu ini? Lagu yang dihapus tidak akan dapat dipilih lagi sebagai musik latar."
+        isLoading={isDeleting}
+      />
+
+      <AdminFooter />
+    </div>
+  );
+}

@@ -1,0 +1,11 @@
+{
+  "siteName": "Weddora Invitation Website",
+  "siteLogo": "/logo.png",
+  "maintenanceMode": false,
+  "freeTierLimit": 0,
+  "aiModelDefault": "Weddora AI Engine",
+  "supportWhatsapp": "6281234567890",
+  "qrisMerchantName": "WEDDORA DIGITAL INVITATION",
+  "midtransClientKey": "SB-Mid-client-XXXXXX",
+  "midtransServerKey": "SB-Mid-server-XXXXXX"
+}

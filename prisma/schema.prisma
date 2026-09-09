@@ -1,0 +1,144 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  name           String
+  password       String       @default("password123")
+  role           String       @default("USER") // USER, ADMIN
+  package        String       @default("PREMIUM") // PREMIUM, LUXURY
+  maxInvitations Int          @default(5)
+  invitations    Invitation[]
+  orders         Order[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  icon        String?
+  templates   Template[]
+}
+
+model Template {
+  id           String        @id @default(uuid())
+  name         String
+  slug         String        @unique
+  categoryId   String
+  category     Category      @relation(fields: [categoryId], references: [id])
+  previewImage String
+  price        Int           @default(0)
+  tier         String        @default("LUXURY") // PREMIUM, LUXURY
+  status       String        @default("PUBLISHED") // DRAFT, PUBLISHED
+  description  String?
+  designSchema String        // JSON string defining layout, colors, fonts, default sections
+  invitations  Invitation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Music {
+  id            String       @id @default(uuid())
+  title         String
+  artist        String
+  audioUrl      String
+  duration      String?      @default("3:45")
+  genre         String?      @default("Acoustic")
+  isRoyaltyFree Boolean      @default(true)
+  status        String       @default("ACTIVE")
+  invitations   Invitation[]
+  createdAt     DateTime     @default(now())
+}
+
+model Invitation {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  templateId     String
+  template       Template @relation(fields: [templateId], references: [id])
+  title          String
+  slug           String   @unique
+  isPublished    Boolean  @default(true)
+  
+  // Couple & Main Info
+  groomName      String   @default("Andi Pratama")
+  groomParents   String?  @default("Putra dari Bapak H. Budi Santoso & Ibu Hj. Ani Wijaya")
+  groomPhoto     String?  @default("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500")
+  groomInstagram String?  @default("@andipratama")
+  brideName      String   @default("Sinta Nurhaliza")
+  brideParents   String?  @default("Putri dari Bapak Dr. H. Rahmad Hidayat & Ibu Hj. Siti Aminah")
+  bridePhoto     String?  @default("https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500")
+  brideInstagram String?  @default("@sintanurhaliza")
+  
+  weddingDate    DateTime @default(now())
+  coverPhoto     String?  @default("https://images.unsplash.com/photo-1519741497674-611481863552?w=1200")
+  youtubeUrl     String?  @default("https://www.youtube.com/watch?v=-ARVwU58l7A")
+  
+  quoteText      String?  @default("Dan di antara tanda-tanda (kebesaran-Nya) ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri...")
+  quoteSource    String?  @default("QS. Ar-Rum: 21")
+  
+  // Content & Config JSONs
+  loveStory      String?  // JSON array of timeline items
+  galleryPhotos  String? // JSON array of photo URLs
+  digitalGifts   String?  // JSON array of bank accounts / QRIS
+  designConfig   String   // JSON string of live editor changes
+  
+  musicId        String?
+  music          Music?   @relation(fields: [musicId], references: [id])
+  
+  views          Int      @default(0)
+  events         Event[]
+  rsvps          Rsvp[]
+  orders         Order[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Event {
+  id            String     @id @default(uuid())
+  invitationId  String
+  invitation    Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  eventType     String     // AKAD, RESEPSI, SYUKURAN
+  title         String
+  date          DateTime
+  startTime     String     @default("08:00 WIB")
+  endTime       String     @default("Selesai")
+  venueName     String
+  address       String
+  googleMapsUrl String?
+}
+
+model Rsvp {
+  id           String     @id @default(uuid())
+  invitationId String
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  guestName    String
+  status       String     @default("ATTENDING") // ATTENDING, DECLINED, MAYBE
+  guestCount   Int        @default(1)
+  message      String?
+  phone        String?
+  createdAt    DateTime   @default(now())
+}
+
+model Order {
+  id            String     @id @default(uuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id])
+  invitationId  String
+  invitation    Invitation @relation(fields: [invitationId], references: [id])
+  amount        Int
+  status        String     @default("PAID") // PENDING, PAID, FAILED
+  paymentMethod String     @default("QRIS")
+  createdAt     DateTime   @default(now())
+}
