@@ -84,7 +84,7 @@ export function PricingSection() {
                       <li className="flex items-center gap-2.5 font-medium"><CheckCircle2 className="w-4 h-4 text-gold-500 shrink-0" /> Siluet Prewedding HD (8 Preset BG)</li>
                       <li className="flex items-center gap-2.5 font-medium"><CheckCircle2 className="w-4 h-4 text-gold-500 shrink-0" /> Tipografi Watermark Inisial Pengantin</li>
                       <li className="flex items-center gap-2.5 font-medium"><CheckCircle2 className="w-4 h-4 text-gold-500 shrink-0" /> Upload File Musik MP3 Kustom Bebas</li>
-                      <li className="flex items-center gap-2.5 font-medium"><CheckCircle2 className="w-4 h-4 text-gold-500 shrink-0" /> Kado Digital (Bank & Barcode QRIS)</li>
+                      <li className="flex items-center gap-2.5 font-medium"><CheckCircle2 className="w-4 h-4 text-gold-500 shrink-0" /> Amplop Digital (Rekening Bank & Hadiah)</li>
                       <li className="flex items-center gap-2.5 font-medium"><CheckCircle2 className="w-4 h-4 text-gold-500 shrink-0" /> Masa Aktif Website 12 Bulan</li>
                       <li className="flex items-center gap-2.5 font-medium"><CheckCircle2 className="w-4 h-4 text-gold-500 shrink-0" /> Timeline Cerita Cinta (Love Story)</li>
                     </ul>

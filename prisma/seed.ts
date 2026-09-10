@@ -491,7 +491,7 @@ async function main() {
         layoutType: 'magazine_editorial',
         couplePhotoStyle: 'polaroid',
         galleryStyle: 'masonry',
-        coverStyle: 'standard',
+        coverStyle: 'auto',
       }),
     },
     {
@@ -514,7 +514,7 @@ async function main() {
         enableWatermarkTypography: false,
         cardStyle: 'cinema-ticket',
         layoutType: 'cinematic_trailer',
-        coverStyle: 'standard',
+        coverStyle: 'auto',
       }),
     },
     {
@@ -537,7 +537,7 @@ async function main() {
         enableWatermarkTypography: false,
         cardStyle: 'scrapbook',
         layoutType: '3d_flipbook',
-        coverStyle: 'standard',
+        coverStyle: 'auto',
       }),
     },
     {
@@ -560,7 +560,7 @@ async function main() {
         enableWatermarkTypography: false,
         cardStyle: 'museum-plaque',
         layoutType: 'horizontal_gallery',
-        coverStyle: 'gatefold_ribbon',
+        coverStyle: 'auto',
       }),
     },
     {
@@ -583,7 +583,7 @@ async function main() {
         enableWatermarkTypography: false,
         cardStyle: 'island-marker',
         layoutType: 'isometric_map',
-        coverStyle: 'standard',
+        coverStyle: 'auto',
       }),
     },
     {
@@ -606,7 +606,7 @@ async function main() {
         enableWatermarkTypography: false,
         cardStyle: 'radial-hub',
         layoutType: 'radial_constellation',
-        coverStyle: 'standard',
+        coverStyle: 'auto',
       }),
     },
     {
@@ -629,7 +629,7 @@ async function main() {
         enableWatermarkTypography: false,
         cardStyle: 'metro-pass',
         layoutType: 'metro_express',
-        coverStyle: 'standard',
+        coverStyle: 'auto',
       }),
     },
   ];

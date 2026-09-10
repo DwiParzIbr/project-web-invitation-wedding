@@ -73,6 +73,29 @@ export const MetroLoveExpressLayout: React.FC<MetroLoveExpressLayoutProps> = ({
     }
   };
 
+  const designSchema = typeof invitation.designConfig === 'object' && invitation.designConfig !== null
+    ? invitation.designConfig
+    : safeParseJSON(invitation.designConfig, {});
+
+  const showTurutMengundang = designSchema?.turutMengundang?.enabled !== false;
+  const turutConfig = designSchema?.turutMengundang;
+  let turutItems: Array<{ name: string; role?: string }> = turutConfig?.items || [];
+  if (turutItems.length === 0 && turutConfig?.rawText && turutConfig.rawText.trim()) {
+    turutItems = turutConfig.rawText
+      .split('\n')
+      .map((line: string) => line.trim().replace(/^[-*•\d.]+\s*/, ''))
+      .filter(Boolean)
+      .map((name: string) => ({ name }));
+  }
+  if (turutItems.length === 0) {
+    turutItems = [
+      { name: 'Bapak Gubernur Bengkulu', role: 'Tokoh Kehormatan' },
+      { name: 'Bapak Bupati Bengkulu Tengah', role: 'Tokoh Kehormatan' },
+      { name: 'Keluarga Besar Mempelai Pria' },
+      { name: 'Keluarga Besar Mempelai Wanita' },
+    ];
+  }
+
   const galleryList: string[] = safeParseJSON(invitation.galleryPhotos, []);
   const eventsList = invitation.events || [];
   const digitalGiftsList = safeParseJSON(invitation.digitalGifts, [
@@ -170,9 +193,19 @@ export const MetroLoveExpressLayout: React.FC<MetroLoveExpressLayoutProps> = ({
       badgeColor: 'border-yellow-400 text-yellow-300',
       emoji: '🎁',
     },
+    ...(showTurutMengundang ? [{
+      id: 'st-turut',
+      code: 'ST-07',
+      type: 'HONORARY HUB',
+      name: 'Stasiun Kehormatan',
+      subtitle: 'Keluarga & Turut Mengundang',
+      lineColor: 'bg-cyan-500',
+      badgeColor: 'border-cyan-400 text-cyan-300',
+      emoji: '👥',
+    }] : []),
     {
       id: 'st-07',
-      code: 'ST-07',
+      code: showTurutMengundang ? 'ST-08' : 'ST-07',
       type: 'TERMINUS',
       name: 'Stasiun Terima Kasih',
       subtitle: 'Ungkapan Syukur & Epilog',
@@ -402,7 +435,7 @@ export const MetroLoveExpressLayout: React.FC<MetroLoveExpressLayoutProps> = ({
           <div className="text-center pb-8 space-y-2">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-mono">
               <Train className="w-3.5 h-3.5 text-amber-400" />
-              <span>Peta Rute Kereta Cepat Asmara • 7 Stasiun</span>
+              <span>Peta Rute Kereta Cepat Asmara • {stations.length} Stasiun</span>
             </div>
             <h2 
               className="text-2xl sm:text-3xl font-bold text-white tracking-wide"
@@ -882,7 +915,105 @@ export const MetroLoveExpressLayout: React.FC<MetroLoveExpressLayoutProps> = ({
           </div>
 
           {/* ----------------------------------------------------
-              STASIUN 07: STASIUN TERIMA KASIH (FINAL DESTINATION)
+              STASIUN 07: STASIUN KEHORMATAN (TURUT MENGUNDANG)
+              ---------------------------------------------------- */}
+          {showTurutMengundang && (
+            <div 
+              ref={(el) => { stationRefs.current['st-turut'] = el; }}
+              className="relative flex flex-col items-center"
+            >
+              <ScrollReveal direction="up" distance="30px" className="w-full flex flex-col items-center">
+                {/* Station Signboard Header */}
+                <div className="mb-4 z-20">
+                  <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border-2 shadow-[0_0_15px_rgba(6,182,212,0.4)] ${
+                    isLight ? 'bg-white border-cyan-500 text-slate-900' : 'bg-[#0a1020] border-cyan-400 text-cyan-300'
+                  }`}>
+                    <span className="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center font-mono">
+                      07
+                    </span>
+                    <span className={`text-[11px] uppercase font-bold tracking-wider font-mono ${isLight ? 'text-cyan-800' : 'text-cyan-300'}`}>
+                      ST-07 • STASIUN KEHORMATAN (TURUT MENGUNDANG)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Station Card Content */}
+                <div className={`w-full max-w-lg rounded-3xl p-5 sm:p-6 shadow-2xl text-left space-y-4 border ${
+                  isLight ? 'bg-white/95 border-stone-200/90 text-slate-800' : 'bg-gradient-to-b from-[#12192e] via-[#0f172a] to-[#0a0f1d] border border-white/15 text-white'
+                }`}>
+                  <div className={`border-b pb-3 flex items-center justify-between ${isLight ? 'border-stone-200' : 'border-white/10'}`}>
+                    <div>
+                      <span className={`text-[9px] uppercase tracking-widest font-mono font-bold block ${isLight ? 'text-cyan-700' : 'text-cyan-400'}`}>
+                        PERON KEHORMATAN • KELUARGA BESAR
+                      </span>
+                      <h3 
+                        className={`text-xl font-bold pt-0.5 ${isLight ? 'text-slate-900' : 'text-white'}`}
+                        style={{ fontFamily: `'${fonts?.heading || 'Cinzel'}', serif` }}
+                      >
+                        {turutConfig?.title?.trim() || 'Turut Mengundang'}
+                      </h3>
+                    </div>
+                    <span className="text-2xl">👥</span>
+                  </div>
+
+                  <p className={`text-xs leading-relaxed font-sans ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                    {turutConfig?.subtitle?.trim() || 'Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga atas kehadiran dan doa restu Bapak/Ibu/Saudara/i:'}
+                  </p>
+
+                  {/* Honored Guest Cards */}
+                  <div className="space-y-2.5">
+                    {turutItems.map((item, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`p-3.5 rounded-2xl flex items-center justify-between transition-all duration-200 ${
+                          isLight 
+                            ? 'bg-stone-50 border border-stone-200/90 hover:border-cyan-400 shadow-xs' 
+                            : 'bg-slate-950/80 border border-white/10 hover:border-cyan-500/40 shadow-md'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 font-mono font-bold text-xs shadow-xs ${
+                            isLight 
+                              ? 'bg-cyan-100/70 border-cyan-300 text-cyan-800' 
+                              : 'bg-cyan-500/15 border-cyan-400/30 text-cyan-400'
+                          }`}>
+                            ✦
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className={`text-sm font-bold tracking-wide leading-snug ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                              {item.name}
+                            </h4>
+                            {item.role && (
+                              <span className={`text-[11px] block mt-0.5 font-medium leading-tight font-mono ${isLight ? 'text-cyan-700' : 'text-cyan-300/90'}`}>
+                                {item.role}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <span className={`text-[9px] font-mono px-2.5 py-1 rounded-full uppercase tracking-wider font-semibold shrink-0 ml-2 ${
+                          isLight 
+                            ? 'bg-cyan-100 text-cyan-800 border border-cyan-200' 
+                            : 'bg-cyan-500/10 text-cyan-300 border border-cyan-400/30'
+                        }`}>
+                          Tamu Terhormat
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Sign-off inside card */}
+                  <div className={`pt-2 text-center border-t ${isLight ? 'border-stone-200' : 'border-white/10'}`}>
+                    <span className={`text-[10px] tracking-wider uppercase font-semibold font-mono ${isLight ? 'text-cyan-800' : 'text-cyan-400/90'}`}>
+                      Beserta Segenap Keluarga Besar Kedua Mempelai
+                    </span>
+                  </div>
+                </div>
+              </ScrollReveal>
+            </div>
+          )}
+
+          {/* ----------------------------------------------------
+              STASIUN AKHIR: STASIUN TERIMA KASIH (FINAL DESTINATION)
               ---------------------------------------------------- */}
           <div 
             ref={(el) => { stationRefs.current['st-07'] = el; }}
@@ -893,10 +1024,10 @@ export const MetroLoveExpressLayout: React.FC<MetroLoveExpressLayoutProps> = ({
               <div className="mb-4 z-20">
                 <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0a1020] border-2 border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.4)]">
                   <span className="w-5 h-5 rounded-full bg-indigo-500 text-white font-black text-[10px] flex items-center justify-center font-mono">
-                    07
+                    {showTurutMengundang ? '08' : '07'}
                   </span>
                   <span className="text-[11px] uppercase font-bold text-indigo-300 tracking-wider font-mono">
-                    ST-07 • STASIUN TERIMA KASIH (TERMINUS)
+                    {showTurutMengundang ? 'ST-08' : 'ST-07'} • STASIUN TERIMA KASIH (TERMINUS)
                   </span>
                 </div>
               </div>

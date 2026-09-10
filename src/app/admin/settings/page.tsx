@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AdminNavbar } from '@/components/layout/AdminNavbar';
 import { AdminFooter } from '@/components/layout/AdminFooter';
-import { Settings, ArrowLeft, Save, CheckCircle, Sliders, Shield, CreditCard, MessageSquare } from 'lucide-react';
+import { Settings, ArrowLeft, Save, CheckCircle, Sliders, Shield, CreditCard, MessageSquare, Share2, Mail, Phone, ExternalLink } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { ScrollReveal } from '@/components/effects/ScrollReveal';
+import { InstagramIcon, TikTokIcon, WhatsAppIcon, MailIcon, SocialIconsRow } from '@/components/ui/SocialIcons';
 
 export default function AdminSettingsPage() {
   const { mode } = useTheme();
@@ -16,6 +17,9 @@ export default function AdminSettingsPage() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [aiModelDefault, setAiModelDefault] = useState('Weddora Smart Designer Engine');
   const [supportWhatsapp, setSupportWhatsapp] = useState('6282278765076');
+  const [supportEmail, setSupportEmail] = useState('weddorawebsite@gmail.com');
+  const [socialInstagram, setSocialInstagram] = useState('https://instagram.com/weddora.id');
+  const [socialTiktok, setSocialTiktok] = useState('https://tiktok.com/@weddora.id');
   const [qrisMerchantName, setQrisMerchantName] = useState('WEDDORA DIGITAL INVITATION');
   const [midtransClientKey, setMidtransClientKey] = useState('SB-Mid-client-XXXXXX');
   const [midtransServerKey, setMidtransServerKey] = useState('SB-Mid-server-XXXXXX');
@@ -41,6 +45,9 @@ export default function AdminSettingsPage() {
           if (typeof data.maintenanceMode === 'boolean') setMaintenanceMode(data.maintenanceMode);
           if (data.aiModelDefault) setAiModelDefault(data.aiModelDefault);
           if (data.supportWhatsapp) setSupportWhatsapp(data.supportWhatsapp);
+          if (data.supportEmail) setSupportEmail(data.supportEmail);
+          if (data.socialInstagram) setSocialInstagram(data.socialInstagram);
+          if (data.socialTiktok) setSocialTiktok(data.socialTiktok);
           if (data.qrisMerchantName) setQrisMerchantName(data.qrisMerchantName);
           if (data.midtransClientKey) setMidtransClientKey(data.midtransClientKey);
           if (data.midtransServerKey) setMidtransServerKey(data.midtransServerKey);
@@ -63,6 +70,9 @@ export default function AdminSettingsPage() {
           maintenanceMode,
           aiModelDefault,
           supportWhatsapp,
+          supportEmail,
+          socialInstagram,
+          socialTiktok,
           qrisMerchantName,
           midtransClientKey,
           midtransServerKey,
@@ -173,27 +183,129 @@ export default function AdminSettingsPage() {
                 </div>
               </div>
 
-              {/* Payment Gateway & Support Settings */}
+              {/* Social Media & Contact Channels */}
               <div className="space-y-4 pt-4 border-t border-slate-800">
-                <h2 className={`text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b pb-3 ${
-                  isLight ? 'text-slate-900 border-slate-200' : 'text-white border-slate-800'
-                }`}>
-                  <CreditCard className="w-4 h-4 text-emerald-400" /> 2. Integrasi Pembayaran & Bantuan
-                </h2>
+                <div className="border-b pb-3 flex items-center justify-between">
+                  <h2 className={`text-sm font-bold uppercase tracking-wider flex items-center gap-2 ${
+                    isLight ? 'text-slate-900 border-slate-200' : 'text-white border-slate-800'
+                  }`}>
+                    <Share2 className="w-4 h-4 text-pink-400" /> 2. Media Sosial & Saluran Kontak Resmi (Footer)
+                  </h2>
+                  <span className="text-[10px] text-gold-500 font-semibold bg-gold-500/10 px-2.5 py-0.5 rounded-full border border-gold-500/20">
+                    Live Sync ke Footer
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Konfigurasi 4 ikon media sosial & komunikasi (Instagram, TikTok, WhatsApp, dan Mail) yang tampil di kolom branding footer website Weddora VIP.
+                </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Instagram */}
                   <div>
-                    <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Nomor WhatsApp Support (Format: 628...)</label>
+                    <label className={`block mb-1 font-semibold flex items-center gap-1.5 ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                      <InstagramIcon className="w-3.5 h-3.5 text-pink-500" />
+                      <span>Akun / URL Instagram</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={socialInstagram}
+                      onChange={(e) => setSocialInstagram(e.target.value)}
+                      placeholder="https://instagram.com/weddora.id atau @weddora.id"
+                      className={`w-full border rounded-xl p-3 focus:outline-none focus:border-pink-500 transition-colors ${
+                        isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
+                      }`}
+                    />
+                    <span className="text-[10px] text-slate-400 mt-1 block">Bisa berupa tautan lengkap atau @username</span>
+                  </div>
+
+                  {/* TikTok */}
+                  <div>
+                    <label className={`block mb-1 font-semibold flex items-center gap-1.5 ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                      <TikTokIcon className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Akun / URL TikTok</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={socialTiktok}
+                      onChange={(e) => setSocialTiktok(e.target.value)}
+                      placeholder="https://tiktok.com/@weddora.id atau @weddora.id"
+                      className={`w-full border rounded-xl p-3 focus:outline-none focus:border-cyan-400 transition-colors ${
+                        isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
+                      }`}
+                    />
+                    <span className="text-[10px] text-slate-400 mt-1 block">Bisa berupa tautan lengkap atau @username</span>
+                  </div>
+
+                  {/* WhatsApp Support */}
+                  <div>
+                    <label className={`block mb-1 font-semibold flex items-center gap-1.5 ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                      <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Nomor WhatsApp CS (Format: 628...)</span>
+                    </label>
                     <input
                       type="text"
                       value={supportWhatsapp}
                       onChange={(e) => setSupportWhatsapp(e.target.value)}
-                      className={`w-full border rounded-xl p-3 font-mono focus:outline-none focus:border-gold-500 ${
+                      placeholder="6282278765076"
+                      className={`w-full border rounded-xl p-3 font-mono focus:outline-none focus:border-emerald-500 transition-colors ${
                         isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
                       }`}
                     />
+                    <span className="text-[10px] text-slate-400 mt-1 block">Contoh format: 6282278765076 (diawali 62)</span>
                   </div>
 
+                  {/* Email Support */}
+                  <div>
+                    <label className={`block mb-1 font-semibold flex items-center gap-1.5 ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                      <MailIcon className="w-3.5 h-3.5 text-gold-500" />
+                      <span>Alamat Email Dukungan Resmi</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={supportEmail}
+                      onChange={(e) => setSupportEmail(e.target.value)}
+                      placeholder="weddorawebsite@gmail.com"
+                      className={`w-full border rounded-xl p-3 focus:outline-none focus:border-gold-500 transition-colors ${
+                        isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
+                      }`}
+                    />
+                    <span className="text-[10px] text-slate-400 mt-1 block">Digunakan untuk tombol Email di footer & halaman bantuan</span>
+                  </div>
+                </div>
+
+                {/* Live Preview Card */}
+                <div className={`p-4 rounded-2xl border ${
+                  isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950/70 border-slate-800'
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <span className={`font-bold text-xs block ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        Pratinjau Langsung (Live Preview) Ikon Footer:
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Klik ikon di bawah untuk mengetes tautan yang sedang Anda atur:
+                      </span>
+                    </div>
+                    <SocialIconsRow
+                      instagram={socialInstagram}
+                      tiktok={socialTiktok}
+                      whatsapp={supportWhatsapp}
+                      email={supportEmail}
+                      isLight={isLight}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Gateway Settings */}
+              <div className="space-y-4 pt-4 border-t border-slate-800">
+                <h2 className={`text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b pb-3 ${
+                  isLight ? 'text-slate-900 border-slate-200' : 'text-white border-slate-800'
+                }`}>
+                  <CreditCard className="w-4 h-4 text-emerald-400" /> 3. Integrasi Pembayaran (QRIS & Midtrans)
+                </h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Nama Merchant QRIS Standard</label>
                     <input
@@ -205,9 +317,7 @@ export default function AdminSettingsPage() {
                       }`}
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Midtrans Client Key</label>
                     <input
@@ -219,18 +329,18 @@ export default function AdminSettingsPage() {
                       }`}
                     />
                   </div>
+                </div>
 
-                  <div>
-                    <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Midtrans Server Key</label>
-                    <input
-                      type="password"
-                      value={midtransServerKey}
-                      onChange={(e) => setMidtransServerKey(e.target.value)}
-                      className={`w-full border rounded-xl p-3 font-mono text-[11px] focus:outline-none focus:border-gold-500 ${
-                        isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
-                      }`}
-                    />
-                  </div>
+                <div>
+                  <label className={`block mb-1 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>Midtrans Server Key</label>
+                  <input
+                    type="password"
+                    value={midtransServerKey}
+                    onChange={(e) => setMidtransServerKey(e.target.value)}
+                    className={`w-full border rounded-xl p-3 font-mono text-[11px] focus:outline-none focus:border-gold-500 ${
+                      isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
+                    }`}
+                  />
                 </div>
               </div>
 

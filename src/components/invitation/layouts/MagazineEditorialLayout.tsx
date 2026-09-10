@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Calendar, ExternalLink, Sparkles, Heart, Quote } from 'lucide-react';
+import { MapPin, Calendar, ExternalLink, Sparkles, Heart, Quote, ArrowUp } from 'lucide-react';
 import { getCleanName } from '@/utils/nameUtils';
 import { isLightTheme } from '@/utils/themeUtils';
 import { BoardingPassEvent } from '../components/BoardingPassEvent';
@@ -68,7 +68,9 @@ export const MagazineEditorialLayout: React.FC<MagazineEditorialLayoutProps> = (
     }
   };
 
-  const designSchema = safeParseJSON(invitation.designConfig, {});
+  const designSchema = typeof invitation.designConfig === 'object' && invitation.designConfig !== null
+    ? invitation.designConfig
+    : safeParseJSON(invitation.designConfig, {});
   const isLight = isLightTheme(theme, designSchema);
   const galleryList: string[] = safeParseJSON(invitation.galleryPhotos, []);
   const loveStoryList = safeParseJSON(invitation.loveStory, []);
@@ -82,6 +84,25 @@ export const MagazineEditorialLayout: React.FC<MagazineEditorialLayoutProps> = (
     month: 'long',
     year: 'numeric',
   });
+
+  const showTurutMengundang = designSchema?.turutMengundang?.enabled !== false;
+  const turutConfig = designSchema?.turutMengundang;
+  let turutItems: Array<{ name: string; role?: string }> = turutConfig?.items || [];
+  if (turutItems.length === 0 && turutConfig?.rawText && turutConfig.rawText.trim()) {
+    turutItems = turutConfig.rawText
+      .split('\n')
+      .map((line: string) => line.trim().replace(/^[-*•\d.]+\s*/, ''))
+      .filter(Boolean)
+      .map((name: string) => ({ name }));
+  }
+  if (turutItems.length === 0) {
+    turutItems = [
+      { name: 'Bapak Gubernur Bengkulu', role: 'Tokoh Kehormatan' },
+      { name: 'Bapak Bupati', role: 'Tokoh Kehormatan' },
+      { name: 'Keluarga Besar Mempelai Pria' },
+      { name: 'Keluarga Besar Mempelai Wanita' },
+    ];
+  }
 
   return (
     <div className={`relative z-10 w-full min-h-screen font-serif pb-28 space-y-16 max-w-xl mx-auto shadow-2xl border-x ${
@@ -452,6 +473,202 @@ export const MagazineEditorialLayout: React.FC<MagazineEditorialLayoutProps> = (
               </p>
             )}
           </form>
+        </ScrollReveal>
+      </section>
+
+      {/* ========================================================
+          SPECIAL FEATURE: TURUT MENGUNDANG
+          ======================================================== */}
+      {showTurutMengundang && (
+        <section className="px-6 space-y-6">
+          <ScrollReveal direction="fade">
+            <div className={`text-left border-b pb-3 ${isLight ? 'border-amber-400/40' : 'border-gold-500/30'}`}>
+              <span className="text-[11px] uppercase tracking-[0.25em] text-gold-500 font-sans font-bold block">
+                SPECIAL FEATURE
+              </span>
+              <h3 className={`text-2xl sm:text-3xl font-black uppercase tracking-tight drop-shadow-sm ${
+                isLight ? 'text-slate-900' : 'text-white'
+              }`}>
+                {turutConfig?.title?.trim() || 'Turut Mengundang'}
+              </h3>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal direction="up" delay={100}>
+            <div className={`p-6 sm:p-8 rounded-3xl text-left space-y-6 border shadow-2xl relative overflow-hidden ${
+              isLight
+                ? 'bg-white/95 border-amber-400/40 text-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.06)]'
+                : 'bg-slate-950/95 border-gold-500/30 text-white shadow-[0_20px_50px_rgba(0,0,0,0.8)]'
+            }`}>
+              {/* Editorial Masthead Bar */}
+              <div className={`flex items-center justify-between text-[9px] font-sans uppercase tracking-[0.3em] text-gold-500 border-b pb-3 font-bold ${
+                isLight ? 'border-stone-200' : 'border-white/10'
+              }`}>
+                <span>EDITORIAL ROSTER</span>
+                <span>VOL. XII • HONORARY PATRONS</span>
+              </div>
+
+              <p className={`text-xs sm:text-sm leading-relaxed italic ${
+                isLight ? 'text-slate-600' : 'text-slate-300'
+              }`}>
+                &ldquo;{turutConfig?.subtitle?.trim() || 'Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga atas kehadiran dan doa restu Bapak/Ibu/Saudara/i:'}&rdquo;
+              </p>
+
+              {/* Roster Items with High Fashion Magazine Columns / Border-y */}
+              <div className={`divide-y border-y ${
+                isLight ? 'divide-stone-200 border-stone-200' : 'divide-white/10 border-white/10'
+              }`}>
+                {turutItems.map((item, idx) => (
+                  <div 
+                    key={idx}
+                    className="py-3.5 flex items-center justify-between gap-4 group transition-colors"
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                      <span className="text-xs font-mono font-bold text-gold-500/80 tracking-widest shrink-0">
+                        {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h4 
+                          className={`text-sm sm:text-base font-bold uppercase tracking-wider leading-snug truncate ${
+                            isLight ? 'text-slate-900' : 'text-white'
+                          }`}
+                          style={{ fontFamily: `'${fonts?.heading || 'Cinzel'}', serif` }}
+                        >
+                          {item.name}
+                        </h4>
+                        {item.role && (
+                          <span className={`text-[10px] font-sans uppercase tracking-[0.2em] font-semibold block mt-0.5 ${
+                            isLight ? 'text-amber-800' : 'text-gold-400'
+                          }`}>
+                            {item.role}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 flex items-center gap-1.5">
+                      <span className={`text-[9px] font-sans uppercase tracking-widest px-2.5 py-1 rounded-full font-bold ${
+                        isLight 
+                          ? 'bg-stone-100 text-slate-800 border border-stone-200' 
+                          : 'bg-white/5 text-gold-300 border border-white/10'
+                      }`}>
+                        Patron
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Sign-off */}
+              <div className={`pt-2 text-center border-t ${isLight ? 'border-stone-200' : 'border-white/10'}`}>
+                <span className="text-[10px] font-sans uppercase tracking-[0.25em] text-gold-500 font-bold block">
+                  Beserta Segenap Keluarga Besar Kedua Mempelai
+                </span>
+                <span className={`text-[9px] font-sans uppercase tracking-widest block pt-0.5 opacity-50 ${
+                  isLight ? 'text-slate-500' : 'text-slate-400'
+                }`}>
+                  Weddora Editorial Society • Edition 2026
+                </span>
+              </div>
+            </div>
+          </ScrollReveal>
+        </section>
+      )}
+
+      {/* ========================================================
+          EPILOGUE & BACK COVER: UCAPAN TERIMA KASIH
+          ======================================================== */}
+      <section className="px-6 space-y-6">
+        <ScrollReveal direction="fade">
+          <div className={`text-left border-b pb-3 ${isLight ? 'border-stone-300' : 'border-white/15'}`}>
+            <span className="text-[11px] uppercase tracking-[0.25em] text-gold-500 font-sans font-bold block">
+              EPILOGUE
+            </span>
+            <h3 className={`text-2xl sm:text-3xl font-black uppercase tracking-tight drop-shadow-sm ${
+              isLight ? 'text-slate-900' : 'text-white'
+            }`}>
+              Words of Gratitude
+            </h3>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" delay={100}>
+          <div className={`p-6 sm:p-8 rounded-2xl text-center space-y-6 shadow-2xl border relative overflow-hidden font-serif ${
+            isLight
+              ? 'bg-white border-stone-300 text-slate-800'
+              : 'bg-gradient-to-b from-[#131720] via-[#0d1017] to-[#080a0f] border-white/15 text-white'
+          }`}>
+            {/* Editorial Inner Banner */}
+            <div className={`flex items-center justify-between text-[9px] uppercase tracking-[0.25em] font-sans border-b pb-2.5 font-bold ${
+              isLight ? 'text-stone-500 border-stone-200' : 'text-slate-400 border-white/10'
+            }`}>
+              <span>VOL. XII</span>
+              <span>SPECIAL EDITION</span>
+              <span>THE GRATITUDE</span>
+            </div>
+
+            <div className="w-12 h-12 rounded-full mx-auto bg-gold-500/10 border border-gold-400/30 flex items-center justify-center text-gold-400">
+              <Heart className="w-6 h-6 text-gold-400 fill-gold-400/20" />
+            </div>
+
+            <div className="space-y-1">
+              <h2 
+                className={`text-2xl sm:text-4xl font-black uppercase tracking-tight ${
+                  isLight ? 'text-slate-900' : 'text-white drop-shadow-sm'
+                }`}
+                style={{ fontFamily: `'${fonts.heading || 'Cinzel'}', serif` }}
+              >
+                Ungkapan Terima Kasih
+              </h2>
+              <span className="text-[10px] font-sans uppercase tracking-[0.2em] text-gold-500 block font-bold">
+                A Heartfelt Thank You Note
+              </span>
+            </div>
+
+            <p className={`text-xs sm:text-sm max-w-md mx-auto leading-relaxed italic ${
+              isLight ? 'text-slate-600' : 'text-slate-300'
+            }`}>
+              &ldquo;Merupakan suatu kehormatan dan kebahagiaan yang tak terhingga bagi kami sekeluarga, atas kehadiran serta doa restu Bapak/Ibu/Saudara/i yang telah melengkapi lembaran kisah bahagia kami.&rdquo;
+            </p>
+
+            {/* Editorial Signature Imprint */}
+            <div className={`border-y py-4 space-y-1 ${
+              isLight ? 'border-stone-200 bg-stone-50/50' : 'border-white/10 bg-white/[0.02]'
+            }`}>
+              <span className="text-[10px] uppercase tracking-widest font-sans text-gold-500 block font-bold">
+                KAMI YANG BERBAHAGIA,
+              </span>
+              <h4 
+                className={`text-xl sm:text-2xl font-bold tracking-wide uppercase ${
+                  isLight ? 'text-slate-900' : 'text-white'
+                }`}
+                style={{ fontFamily: `'${fonts.heading || 'Cinzel'}', serif` }}
+              >
+                {groomName} &amp; {brideName}
+              </h4>
+              <span className={`text-[11px] block font-sans ${
+                isLight ? 'text-slate-500' : 'text-slate-400'
+              }`}>
+                Beserta Segenap Keluarga Besar Kedua Mempelai
+              </span>
+            </div>
+
+            {/* Back to top button */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className={`w-full py-3 rounded-xl font-sans text-xs uppercase tracking-widest font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
+                  isLight
+                    ? 'bg-stone-900 text-white hover:bg-stone-800'
+                    : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
+                }`}
+              >
+                <ArrowUp className="w-3.5 h-3.5 text-gold-400" />
+                <span>Kembali ke Sampul Majalah (Top)</span>
+              </button>
+            </div>
+          </div>
         </ScrollReveal>
       </section>
 

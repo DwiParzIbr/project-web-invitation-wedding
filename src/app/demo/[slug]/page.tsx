@@ -51,6 +51,19 @@ export default async function DemoTemplatePage({
         watermarkText: couple.watermarkText,
       };
     }
+    if (customConfig && !customConfig.turutMengundang) {
+      customConfig.turutMengundang = {
+        enabled: true,
+        title: 'Turut Mengundang',
+        subtitle: 'Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga atas kehadiran dan doa restu Bapak/Ibu/Saudara/i:',
+        items: [
+          { name: 'Bapak Gubernur Bengkulu', role: 'Tokoh Kehormatan' },
+          { name: 'Bapak Bupati Bengkulu Tengah', role: 'Tokoh Kehormatan' },
+          { name: 'Keluarga Besar Mempelai Pria' },
+          { name: 'Keluarga Besar Mempelai Wanita' },
+        ],
+      };
+    }
   } catch (e) {
     customConfig = template.designSchema;
   }

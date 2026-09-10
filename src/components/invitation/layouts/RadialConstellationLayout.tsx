@@ -10,6 +10,7 @@ import {
 import { getCleanName } from '@/utils/nameUtils';
 import { isLightTheme } from '@/utils/themeUtils';
 import { ScrollReveal } from '@/components/effects/ScrollReveal';
+import { TurutMengundangSection } from '../components/TurutMengundangSection';
 
 interface RadialConstellationLayoutProps {
   invitation: any;
@@ -102,6 +103,10 @@ export const RadialConstellationLayout: React.FC<RadialConstellationLayoutProps>
       return fallback;
     }
   };
+
+  const designSchema = typeof invitation.designConfig === 'object' && invitation.designConfig !== null
+    ? invitation.designConfig
+    : safeParseJSON(invitation.designConfig, {});
 
   const galleryList: string[] = safeParseJSON(invitation.galleryPhotos, []);
   const eventsList = invitation.events || [];
@@ -849,6 +854,18 @@ export const RadialConstellationLayout: React.FC<RadialConstellationLayoutProps>
                         </div>
                       </ScrollReveal>
                     ))}
+                  </div>
+
+                  <div className="pt-4 text-left">
+                    <TurutMengundangSection
+                      config={designSchema?.turutMengundang}
+                      theme={theme}
+                      fonts={fonts}
+                      textPrimaryColor="#F8FAFC"
+                      contentCardBg="rgba(15, 23, 42, 0.85)"
+                      contentCardBorderClass="border border-amber-400/30 shadow-2xl"
+                      cardBorderRadius="rounded-2xl"
+                    />
                   </div>
                 </div>
               )}

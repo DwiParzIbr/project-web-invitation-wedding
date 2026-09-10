@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
@@ -16,12 +16,40 @@ import {
   CreditCard,
   HeartHandshake,
   CheckCircle2,
+  Image as ImageIcon,
+  MapPin,
+  Gift,
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { SocialIconsRow } from '@/components/ui/SocialIcons';
+import { formatWhatsappUrl, formatMailUrl } from '@/utils/social';
 
 export const Footer = () => {
   const { mode } = useTheme();
   const isLight = mode === 'light';
+
+  const [settings, setSettings] = useState({
+    supportWhatsapp: '6282278765076',
+    supportEmail: 'weddorawebsite@gmail.com',
+    socialInstagram: 'https://instagram.com/weddora.id',
+    socialTiktok: 'https://tiktok.com/@weddora.id',
+  });
+
+  useEffect(() => {
+    fetch('/api/admin/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setSettings({
+            supportWhatsapp: data.supportWhatsapp || '6282278765076',
+            supportEmail: data.supportEmail || 'weddorawebsite@gmail.com',
+            socialInstagram: data.socialInstagram || 'https://instagram.com/weddora.id',
+            socialTiktok: data.socialTiktok || 'https://tiktok.com/@weddora.id',
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <footer className={`border-t py-10 md:py-14 transition-colors duration-300 ${
@@ -54,6 +82,17 @@ export const Footer = () => {
                 <Crown className="w-3 h-3" />
                 <span>VIP Quality</span>
               </span>
+            </div>
+
+            {/* Social Media & Contact Quick Channels */}
+            <div className="pt-2 flex flex-col items-center">
+              <SocialIconsRow
+                instagram={settings.socialInstagram}
+                tiktok={settings.socialTiktok}
+                whatsapp={settings.supportWhatsapp}
+                email={settings.supportEmail}
+                isLight={isLight}
+              />
             </div>
           </div>
 
@@ -119,10 +158,16 @@ export const Footer = () => {
               <Music className="w-3 h-3 text-gold-500" /> Musik MP3 Kustom
             </span>
             <span className="px-2.5 py-1 rounded-lg bg-slate-200/60 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800 flex items-center gap-1">
-              <CreditCard className="w-3 h-3 text-gold-500" /> QRIS & Rekening
+              <ImageIcon className="w-3 h-3 text-gold-500" /> Galeri Foto & Video
             </span>
             <span className="px-2.5 py-1 rounded-lg bg-slate-200/60 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800 flex items-center gap-1">
-              <HeartHandshake className="w-3 h-3 text-gold-500" /> RSVP & Buku Tamu
+              <MapPin className="w-3 h-3 text-gold-500" /> Peta Google Maps
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-slate-200/60 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800 flex items-center gap-1">
+              <Gift className="w-3 h-3 text-gold-500" /> Amplop Digital
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-slate-200/60 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800 flex items-center gap-1">
+              <HeartHandshake className="w-3 h-3 text-gold-500" /> RSVP & Tamu
             </span>
           </div>
 
@@ -140,7 +185,7 @@ export const Footer = () => {
             </p>
             <div className="flex items-center justify-center gap-2 pt-1">
               <a
-                href="https://wa.me/6282278765076?text=Halo%20Admin%20Weddora%20VIP,%20saya%20ingin%20berkonsultasi%20mengenai%20pembuatan%20dan%20aktivasi%20undangan%20pernikahan%20digital.%20Terima%20kasih!%20%F0%9F%99%8F%E2%9C%A8"
+                href={formatWhatsappUrl(settings.supportWhatsapp)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all"
@@ -149,7 +194,7 @@ export const Footer = () => {
                 <span>WhatsApp Support</span>
               </a>
               <a
-                href="mailto:weddorawebsite@gmail.com"
+                href={formatMailUrl(settings.supportEmail)}
                 className={`px-4 py-2 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition-all ${
                   isLight
                     ? 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
@@ -186,6 +231,17 @@ export const Footer = () => {
               <Lock className="w-3 h-3 shrink-0" />
               <span>SSL 256-Bit Encrypted Security</span>
             </div>
+
+            {/* Social Media & Contact Quick Channels */}
+            <div className="pt-2">
+              <SocialIconsRow
+                instagram={settings.socialInstagram}
+                tiktok={settings.socialTiktok}
+                whatsapp={settings.supportWhatsapp}
+                email={settings.supportEmail}
+                isLight={isLight}
+              />
+            </div>
           </div>
 
           {/* Navigasi Cepat */}
@@ -211,10 +267,13 @@ export const Footer = () => {
                 <CheckCircle2 className="w-3 h-3 text-gold-500" /> Upload Musik MP3 Kustom
               </li>
               <li className="hover:text-gold-500 transition-colors flex items-center gap-1.5">
-                <CheckCircle2 className="w-3 h-3 text-gold-500" /> Pilihan Kata Mutiara Indah
+                <CheckCircle2 className="w-3 h-3 text-gold-500" /> Galeri Foto & Video Prewedding
               </li>
               <li className="hover:text-gold-500 transition-colors flex items-center gap-1.5">
-                <CheckCircle2 className="w-3 h-3 text-gold-500" /> Barcode QRIS & Rekening Kado
+                <CheckCircle2 className="w-3 h-3 text-gold-500" /> Navigasi Peta Google Maps
+              </li>
+              <li className="hover:text-gold-500 transition-colors flex items-center gap-1.5">
+                <CheckCircle2 className="w-3 h-3 text-gold-500" /> Amplop Digital & Kirim Kado
               </li>
               <li className="hover:text-gold-500 transition-colors flex items-center gap-1.5">
                 <CheckCircle2 className="w-3 h-3 text-gold-500" /> Form RSVP & Rekap Tamu
@@ -232,20 +291,20 @@ export const Footer = () => {
             </p>
             <div className="pt-1 flex flex-col gap-2">
               <a
-                href="https://wa.me/6282278765076?text=Halo%20Admin%20Weddora%20VIP,%20saya%20ingin%20berkonsultasi%20mengenai%20pembuatan%20dan%20aktivasi%20undangan%20pernikahan%20digital.%20Terima%20kasih!%20%F0%9F%99%8F%E2%9C%A8"
+                href={formatWhatsappUrl(settings.supportWhatsapp)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 hover:bg-emerald-500/20 px-3.5 py-1.5 rounded-xl border border-emerald-500/30 transition-all text-xs w-fit"
               >
                 <Phone className="w-3.5 h-3.5" />
-                <span>WhatsApp: +62 822-7876-5076</span>
+                <span>WhatsApp: +{settings.supportWhatsapp.replace(/[^0-9]/g, '')}</span>
               </a>
               <a
-                href="mailto:weddorawebsite@gmail.com"
+                href={formatMailUrl(settings.supportEmail)}
                 className="inline-flex items-center gap-2 text-gold-600 dark:text-gold-400 font-bold bg-gold-500/10 hover:bg-gold-500/20 px-3.5 py-1.5 rounded-xl border border-gold-500/30 transition-all text-xs w-fit"
               >
                 <Mail className="w-3.5 h-3.5" />
-                <span>weddorawebsite@gmail.com</span>
+                <span>{settings.supportEmail}</span>
               </a>
             </div>
           </div>

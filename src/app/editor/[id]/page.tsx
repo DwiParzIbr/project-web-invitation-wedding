@@ -1,5 +1,5 @@
 import React from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
 import { VisualEditor } from '@/components/editor/VisualEditor';
@@ -27,17 +27,7 @@ export default async function EditorPage({ params }: EditorPageProps) {
   }
 
   if (!activeUser) {
-    activeUser = await db.user.findFirst({
-      where: { email: 'andi@example.com' },
-    });
-  }
-
-  if (!activeUser) {
-    activeUser = await db.user.findFirst();
-  }
-
-  if (!activeUser) {
-    return notFound();
+    redirect(`/login?redirect=/editor/${encodeURIComponent(params.id)}`);
   }
 
   // Fetch music list

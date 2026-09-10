@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { getCleanName, getInitialLetter } from '@/utils/nameUtils';
 import { isLightTheme } from '@/utils/themeUtils';
+import { TurutMengundangSection } from '../components/TurutMengundangSection';
 import { ScrollReveal } from '@/components/effects/ScrollReveal';
 
 interface RealisticFlipbookLayoutProps {
@@ -63,8 +64,6 @@ export const RealisticFlipbookLayout: React.FC<RealisticFlipbookLayoutProps> = (
   const [isFlipping, setIsFlipping] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-  const totalPages = 8; // 0: Cover, 1: Prologue, 2: Couple, 3: Events, 4: Gallery, 5: Postcard RSVP, 6: Wedding Gifts, 7: Thank You & Epilogue
-
   const safeParseJSON = (data: any, fallback: any) => {
     if (!data) return fallback;
     let parsed = data;
@@ -75,6 +74,12 @@ export const RealisticFlipbookLayout: React.FC<RealisticFlipbookLayoutProps> = (
       return fallback;
     }
   };
+
+  const designSchema = typeof invitation.designConfig === 'object' && invitation.designConfig !== null
+    ? invitation.designConfig
+    : safeParseJSON(invitation.designConfig, {});
+  const showTurutMengundang = designSchema?.turutMengundang?.enabled !== false;
+  const totalPages = showTurutMengundang ? 9 : 8;
 
   const galleryList: string[] = safeParseJSON(invitation.galleryPhotos, []);
   const loveStoryList = safeParseJSON(invitation.loveStory, []);
@@ -934,16 +939,41 @@ export const RealisticFlipbookLayout: React.FC<RealisticFlipbookLayoutProps> = (
                 <div className="pt-2 border-t border-stone-300 flex items-center justify-between text-[10px] text-stone-500 font-mono">
                   <span className="cursor-pointer hover:underline no-tap-flip" onClick={(e) => { e.stopPropagation(); goToPrevPage(); }}>⤺ RSVP</span>
                   <span className="cursor-pointer text-amber-800 font-bold hover:underline no-tap-flip" onClick={(e) => { e.stopPropagation(); goToNextPage(); }}>
-                    Ucapan Terima Kasih ➔
+                    {showTurutMengundang ? 'Turut Mengundang ➔' : 'Ucapan Terima Kasih ➔'}
                   </span>
                 </div>
               </div>
             )}
 
             {/* ========================================================
-                PAGE 7: EPILOGUE & UCAPAN TERIMA KASIH (SCRAPBOOK PORTRAIT)
+                PAGE 7: TURUT MENGUNDANG
                 ======================================================== */}
-            {currentPage === 7 && (
+            {showTurutMengundang && currentPage === 7 && (
+              <div className="relative w-full h-full p-4 sm:p-5 flex flex-col justify-between overflow-y-auto no-scrollbar">
+                <div className="space-y-3">
+                  <TurutMengundangSection
+                    config={designSchema?.turutMengundang}
+                    theme={theme}
+                    fonts={fonts}
+                    textPrimaryColor="#292524"
+                    contentCardBg="rgba(255, 255, 255, 0.9)"
+                    contentCardBorderClass="border border-stone-300 shadow-md"
+                    cardBorderRadius="rounded-2xl"
+                  />
+                </div>
+                <div className="pt-2 border-t border-stone-300 flex items-center justify-between text-[10px] text-stone-500 font-mono mt-4">
+                  <span className="cursor-pointer hover:underline no-tap-flip" onClick={(e) => { e.stopPropagation(); goToPrevPage(); }}>⤺ Kado</span>
+                  <span className="cursor-pointer text-amber-800 font-bold hover:underline no-tap-flip" onClick={(e) => { e.stopPropagation(); goToNextPage(); }}>
+                    Terima Kasih ➔
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* ========================================================
+                PAGE: EPILOGUE & UCAPAN TERIMA KASIH (SCRAPBOOK PORTRAIT)
+                ======================================================== */}
+            {currentPage === (showTurutMengundang ? 8 : 7) && (
               <div className="relative w-full h-full p-5 sm:p-6 flex flex-col justify-between text-center overflow-y-auto no-scrollbar">
                 {/* Vintage Washi Tape Top Right */}
                 <div className="absolute top-2 right-5 w-16 h-5 bg-rose-200/90 -rotate-3 shadow-sm border-t border-b border-rose-300/80 z-10" />

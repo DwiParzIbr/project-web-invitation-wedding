@@ -4,7 +4,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Compass, Volume2, VolumeX, MapPin, Calendar, Clock, 
-  Sparkles, ExternalLink, ChevronRight, ChevronLeft, Award, Eye 
+  Sparkles, ExternalLink, ChevronRight, ChevronLeft, Award, Eye,
+  Heart, RotateCcw
 } from 'lucide-react';
 import { getCleanName } from '@/utils/nameUtils';
 import { isLightTheme } from '@/utils/themeUtils';
@@ -84,6 +85,28 @@ export const HorizontalGalleryLayout: React.FC<HorizontalGalleryLayoutProps> = (
     year: 'numeric',
   });
 
+  const designSchema = typeof invitation.designConfig === 'object' && invitation.designConfig !== null
+    ? invitation.designConfig
+    : safeParseJSON(invitation.designConfig, {});
+  const showTurutMengundang = designSchema?.turutMengundang?.enabled !== false;
+  const turutConfig = designSchema?.turutMengundang;
+  let turutItems: Array<{ name: string; role?: string }> = turutConfig?.items || [];
+  if (turutItems.length === 0 && turutConfig?.rawText && turutConfig.rawText.trim()) {
+    turutItems = turutConfig.rawText
+      .split('\n')
+      .map((line: string) => line.trim().replace(/^[-*•\d.]+\s*/, ''))
+      .filter(Boolean)
+      .map((name: string) => ({ name }));
+  }
+  if (turutItems.length === 0) {
+    turutItems = [
+      { name: 'Bapak Gubernur Bengkulu', role: 'Tokoh Kehormatan' },
+      { name: 'Bapak Bupati', role: 'Tokoh Kehormatan' },
+      { name: 'Keluarga Besar Mempelai Pria' },
+      { name: 'Keluarga Besar Mempelai Wanita' },
+    ];
+  }
+
   const wings = [
     { id: 0, title: 'Entrance', label: 'Vestibule' },
     { id: 1, title: 'Wing A', label: 'Portraits' },
@@ -91,6 +114,8 @@ export const HorizontalGalleryLayout: React.FC<HorizontalGalleryLayoutProps> = (
     { id: 3, title: 'Wing C', label: 'Sacred Hall' },
     { id: 4, title: 'Wing D', label: 'Archives' },
     { id: 5, title: 'Wing E', label: 'Guestbook' },
+    ...(showTurutMengundang ? [{ id: 6, title: 'Wing F', label: 'Honored' }] : []),
+    { id: showTurutMengundang ? 7 : 6, title: showTurutMengundang ? 'Wing G' : 'Wing F', label: 'Gratitude' },
   ];
 
   // Convert desktop vertical mouse wheel to horizontal scrolling
@@ -545,6 +570,214 @@ export const HorizontalGalleryLayout: React.FC<HorizontalGalleryLayoutProps> = (
               </p>
             )}
           </form>
+        </motion.section>
+
+        {/* ========================================================
+            ZONE 6: WING F - SALA DI ONORE (TURUT MENGUNDANG)
+            ======================================================== */}
+        {showTurutMengundang && (
+          <motion.section 
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            className="shrink-0 w-[88vw] sm:w-[500px] h-[82vh] snap-center flex flex-col justify-center"
+          >
+            {/* Museum Wing Header */}
+            <div className="text-left mb-3">
+              <div className="flex items-center justify-between border-b pb-1.5 mb-1.5 border-white/10">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-gold-400 font-sans font-bold">
+                  WING F
+                </span>
+                <span className="text-[10px] font-mono tracking-widest text-gold-400/80 uppercase">
+                  SALA DI ONORE
+                </span>
+              </div>
+              <h2 
+                className={`text-xl sm:text-2xl font-bold uppercase tracking-tight ${
+                  isLight ? 'text-slate-900' : 'text-white'
+                }`}
+                style={{ fontFamily: `'${fonts?.heading || 'Cinzel'}', serif` }}
+              >
+                {turutConfig?.title?.trim() || 'Turut Mengundang'}
+              </h2>
+              <p className={`text-[11px] font-serif italic mt-0.5 leading-relaxed line-clamp-2 ${
+                isLight ? 'text-slate-600' : 'text-slate-300'
+              }`}>
+                {turutConfig?.subtitle?.trim() || 'Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga atas kehadiran dan doa restu Bapak/Ibu/Saudara/i:'}
+              </p>
+            </div>
+
+            {/* Museum Exhibition Benefactors Registry Plaque */}
+            <div className={`p-5 rounded-2xl border text-left space-y-3.5 shadow-2xl overflow-y-auto max-h-[62vh] no-scrollbar ${
+              isLight 
+                ? 'bg-white/95 border-amber-400/40 text-slate-800 shadow-stone-300/40' 
+                : 'bg-slate-900/95 border-gold-500/40 text-white shadow-black/80'
+            }`}>
+              {/* Museum Gallery Badge */}
+              <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                <div className="inline-flex items-center gap-1.5 text-[9px] font-mono uppercase tracking-[0.2em] text-gold-400 font-bold">
+                  <Sparkles className="w-3 h-3 text-gold-400" />
+                  <span>REGISTRO DEI BENEFATTORI • HONOR ROLL</span>
+                </div>
+                <span className="text-[9px] font-mono opacity-50 uppercase">
+                  Nº {turutItems.length} NOMINATI
+                </span>
+              </div>
+
+              {/* Patron Cards List */}
+              <div className="space-y-2">
+                {turutItems.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-3 rounded-xl border flex items-center justify-between transition-all duration-200 ${
+                      isLight
+                        ? 'bg-stone-50/80 border-stone-200/90 hover:border-gold-500/60 shadow-xs'
+                        : 'bg-slate-950/70 border-white/10 hover:border-gold-400/40 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 font-serif font-bold text-xs ${
+                        isLight
+                          ? 'bg-amber-100/70 border-amber-300 text-amber-900'
+                          : 'bg-gold-500/15 border-gold-400/30 text-gold-400'
+                      }`}>
+                        {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 
+                          className={`text-xs sm:text-sm font-bold tracking-wide leading-snug truncate ${
+                            isLight ? 'text-slate-900' : 'text-white'
+                          }`}
+                          style={{ fontFamily: `'${fonts?.heading || 'Cinzel'}', serif` }}
+                        >
+                          {item.name}
+                        </h4>
+                        {item.role && (
+                          <span className={`text-[10px] block font-mono uppercase tracking-wider ${
+                            isLight ? 'text-amber-800' : 'text-gold-400/90'
+                          }`}>
+                            {item.role}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className={`text-[8px] font-mono px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold shrink-0 ml-2 ${
+                      isLight
+                        ? 'bg-amber-100/80 text-amber-900 border border-amber-200'
+                        : 'bg-gold-500/10 text-gold-300 border border-gold-500/30'
+                    }`}>
+                      Onorevole
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Gallery Curatorial Footer */}
+              <div className={`pt-2.5 text-center border-t ${isLight ? 'border-stone-200' : 'border-white/10'}`}>
+                <span className={`text-[9px] font-mono uppercase tracking-[0.2em] font-bold block ${
+                  isLight ? 'text-amber-900' : 'text-gold-400'
+                }`}>
+                  Beserta Segenap Keluarga Besar Kedua Mempelai
+                </span>
+                <span className="text-[8px] font-mono opacity-50 uppercase tracking-widest block pt-0.5">
+                  Archivio Ufficiale delle Famiglie • Grand Vernissage
+                </span>
+              </div>
+            </div>
+          </motion.section>
+        )}
+
+        {/* ========================================================
+            FINAL ZONE: L'ÉPILOGUE DE L'AMOUR (UNGKAPAN TERIMA KASIH)
+            ======================================================== */}
+        <motion.section
+          className="w-[90vw] sm:w-[500px] shrink-0 h-full flex flex-col justify-center px-4 overflow-y-auto no-scrollbar"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+        >
+          <div className="space-y-4 my-auto">
+            <div className="border-b pb-2 flex items-center justify-between">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-gold-400 font-sans font-bold">
+                {showTurutMengundang ? 'WING G' : 'WING F'}
+              </span>
+              <span className="text-[10px] font-mono opacity-60">SALA DI RINGRAZIAMENTO</span>
+            </div>
+
+            {/* Museum Exhibition Epilogue Plaque */}
+            <div className={`p-6 sm:p-7 rounded-3xl backdrop-blur-md space-y-5 text-center shadow-2xl relative overflow-hidden border ${
+              isLight
+                ? 'bg-white/95 border-stone-200 text-slate-800 shadow-stone-200/50'
+                : 'bg-gradient-to-b from-[#1c1f24] via-[#16181c] to-[#0f1114] border-white/15 text-white shadow-black/80'
+            }`}>
+              {/* Subtle ambient spotlight */}
+              <div 
+                className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl pointer-events-none opacity-20"
+                style={{ backgroundColor: theme.primary || '#C9A66B' }}
+              />
+
+              <div className="w-14 h-14 rounded-full mx-auto border-2 border-gold-400/50 bg-gold-500/10 flex items-center justify-center text-gold-400 shadow-lg">
+                <Heart className="w-6 h-6 text-rose-400 animate-pulse fill-rose-400" />
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[9px] uppercase tracking-[0.3em] text-gold-400 font-mono font-bold block">
+                  EPILOGUE & WORDS OF GRATITUDE
+                </span>
+                <h2 
+                  className={`text-2xl sm:text-3xl font-bold tracking-wide pt-1 ${
+                    isLight ? 'text-slate-900' : 'text-white'
+                  }`}
+                  style={{ fontFamily: `'${fonts?.heading || 'Cinzel'}', serif` }}
+                >
+                  Ungkapan Terima Kasih
+                </h2>
+              </div>
+
+              <p className={`text-xs max-w-sm mx-auto leading-relaxed font-serif italic ${
+                isLight ? 'text-slate-600' : 'text-slate-300'
+              }`}>
+                &ldquo;Merupakan suatu kehormatan dan kebahagiaan yang tak terhingga bagi kami sekeluarga, atas kehadiran serta doa restu Bapak/Ibu/Saudara/i yang telah mengiringi pameran cinta kami menuju pelabuhan hidup bersama.&rdquo;
+              </p>
+
+              {/* Curatorial Sign-off Plaque */}
+              <div className={`p-4 rounded-2xl border space-y-1.5 font-serif ${
+                isLight ? 'bg-stone-50 border-stone-200' : 'bg-black/40 border-white/10'
+              }`}>
+                <span className="text-[10px] uppercase tracking-widest text-gold-500 block font-mono font-semibold">
+                  Kami Yang Berbahagia,
+                </span>
+                <h3 
+                  className={`text-lg font-bold tracking-wide ${isLight ? 'text-slate-900' : 'text-white'}`}
+                  style={{ fontFamily: `'${fonts?.heading || 'Cinzel'}', serif` }}
+                >
+                  {groomName} & {brideName}
+                </h3>
+                <span className={`text-[11px] block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                  Beserta Segenap Keluarga Besar Kedua Mempelai
+                </span>
+              </div>
+
+              {/* Navigation button back to start */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => scrollToWing(0)}
+                  className="w-full py-2.5 rounded-xl font-mono text-[11px] uppercase tracking-widest font-bold bg-gold-500/20 hover:bg-gold-500/30 text-gold-300 border border-gold-400/40 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Kembali ke Pintu Masuk (Entrance)</span>
+                </button>
+              </div>
+
+              <span className={`text-[9px] uppercase tracking-[0.25em] font-mono block pt-1 opacity-50 ${
+                isLight ? 'text-slate-500' : 'text-slate-400'
+              }`}>
+                Exposition Permanente • Museum D&apos;Amour
+              </span>
+            </div>
+          </div>
         </motion.section>
       </main>
 

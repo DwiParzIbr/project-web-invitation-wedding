@@ -6,7 +6,7 @@ import { MobileDeviceFrame } from './MobileDeviceFrame';
 import { AiAssistantModal } from './AiAssistantModal';
 import { RenderInvitationView } from '@/components/invitation/RenderInvitationView';
 import { getCleanName, getInitialLetter, getAudioDurationFromFile, getDurationInSeconds, probeAudioDuration } from '@/utils/nameUtils';
-import { DesignSchema, DigitalGiftItem, EventItem, LoveStoryItem } from '@/types/wedding';
+import { DesignSchema, DigitalGiftItem, EventItem, LoveStoryItem, TurutMengundangConfig, TurutMengundangItem } from '@/types/wedding';
 import { useTheme } from '@/context/ThemeContext';
 import { LIGHT_THEME_PRESETS, DARK_THEME_PRESETS, isLightTheme } from '@/utils/themeUtils';
 import {
@@ -14,6 +14,7 @@ import {
   Globe,
   Sparkles,
   User,
+  Users,
   Palette,
   Crown,
   Mail,
@@ -62,6 +63,7 @@ export const ALL_EDITOR_TABS = [
   { id: 'music', name: 'Musik MP3', icon: Music, desc: 'Pilihan lagu & potong detik mulai' },
   { id: 'events', name: 'Acara', icon: MapPin, desc: 'Akad, resepsi, waktu & link Google Maps' },
   { id: 'gifts', name: 'Gift', icon: Gift, desc: 'Rekening amplop digital & alamat kado' },
+  { id: 'turutMengundang', name: 'Turut Mengundang', icon: Users, desc: 'Daftar keluarga besar & tokoh kehormatan yang turut mengundang' },
 ];
 
 interface VisualEditorProps {
@@ -278,6 +280,29 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
       ];
     }
   });
+
+  const defaultTurutMengundang: TurutMengundangConfig = {
+    enabled: true,
+    title: 'Turut Mengundang',
+    subtitle: 'Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga atas kehadiran dan doa restu Bapak/Ibu/Saudara/i:',
+    items: [
+      { name: 'Bapak Gubernur Bengkulu', role: 'Tokoh Kehormatan' },
+      { name: 'Bapak Bupati', role: 'Tokoh Kehormatan' },
+      { name: 'Keluarga Besar Mempelai Pria' },
+      { name: 'Keluarga Besar Mempelai Wanita' },
+    ],
+  };
+
+  const updateTurutMengundang = (updated: Partial<TurutMengundangConfig>) => {
+    const current = designSchema.turutMengundang || defaultTurutMengundang;
+    setDesignSchema({
+      ...designSchema,
+      turutMengundang: {
+        ...current,
+        ...updated,
+      },
+    });
+  };
 
   const currentMusicObj = localMusicList.find((m) => m.id === selectedMusicId) || localMusicList[0];
 
@@ -778,18 +803,157 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                   </div>
                 </div>
 
-                {/* 2. COVER & OPENING STYLE */}
+                {/* 2. NATIVE COVER ACCORDING TO NAVIGATION */}
+                {(() => {
+                  const currentLayout = designSchema.layoutType || 'standard_scroll';
+                  const nativeCoverMap: Record<string, { title: string; badge: string; desc: string; icon: string }> = {
+                    standard_scroll: {
+                      title: 'Royal Wedding Crest & Monogram Card',
+                      badge: 'Bawaan Standar Scroll',
+                      desc: 'Kartu sampul modern klasik dengan stempel monogram inisial timbul emas, bingkai ornamen simetris kerajaan, dan tombol Buka Undangan berdenyut halus.',
+                      icon: '🎴',
+                    },
+                    story_slides: {
+                      title: 'Stories Ring Tap-to-Watch (Instagram/TikTok)',
+                      badge: 'Bawaan Story Slides',
+                      desc: 'Sampul vertikal mobile dengan cincin Stories gradien neon berputar mengitari avatar pengantin, badge LIVE STORY, stiker mention tamu, dan interaksi ketuk untuk memutar.',
+                      icon: '📱',
+                    },
+                    magazine_editorial: {
+                      title: 'Vogue High-Fashion Front Cover Issue',
+                      badge: 'Bawaan Magazine Editorial',
+                      desc: 'Sampul depan majalah fashion kelas dunia dengan masthead WEDDORA VOGUE, nomor volume edisi, headline editorial megah, barcode pembaca VIP, dan tombol Read Issue.',
+                      icon: '📰',
+                    },
+                    cinematic_trailer: {
+                      title: 'Hollywood Premiere Movie Poster & Play Teaser',
+                      badge: 'Bawaan Cinematic Trailer',
+                      desc: 'Poster teaser bioskop layar lebar film noir dengan lampu sorot karpet merah, klasifikasi usia 13+ 4K HDR, tiket bioskop VIP untuk tamu, dan tombol Play Trailer.',
+                      icon: '🎬',
+                    },
+                    '3d_flipbook': {
+                      title: '3D Hardcover Keepsake Book (Embossed Leather & Gold Foil)',
+                      badge: 'Bawaan 3D Flipbook',
+                      desc: 'Buku kenangan hardcover fisik 3D dengan tekstur kulit berjahit, pelindung sudut logam kuningan timbul, cetak debossed emas, pita pembatas buku, dan animasi buka buku.',
+                      icon: '📖',
+                    },
+                    horizontal_gallery: {
+                      title: "Grand Vernissage Museum Entrance Plaque (L'Ingresso)",
+                      badge: 'Bawaan Horizontal Gallery',
+                      desc: "Pintu masuk pameran seni privat dengan lampu sorot museum, plakat marmer berbingkai emas Italia (L'Ingresso), tiket VIP kurator, dan tombol Entra Nella Mostra.",
+                      icon: '🏛️',
+                    },
+                    isometric_map: {
+                      title: 'Love Journey Passport & Expedition Boarding Pass',
+                      badge: 'Bawaan Our Journey Map',
+                      desc: 'Buku paspor petualangan cinta dengan stempel visa asmara merah, tiket boarding pass penerbangan dengan rute perjalanan, dan tombol Buka Paspor & Mulai Petualangan.',
+                      icon: '✈️',
+                    },
+                    radial_constellation: {
+                      title: 'Cosmic Stargate & Astrological Orbit Portal',
+                      badge: 'Bawaan Radial Constellation',
+                      desc: 'Portal observatorium kubah bintang dengan cincin orbit kosmik berputar 360°, partikel debu bintang emas, koordinat rasi bintang, dan tombol Inisiasi Orbit Bintang.',
+                      icon: '🌌',
+                    },
+                    metro_express: {
+                      title: 'Metro Transit Gate & Touch-in IC Smart Card',
+                      badge: 'Bawaan Metro Love Express',
+                      desc: 'Gerbang stasiun transit metro futuristik dengan papan LED running text, rel neon menyala, kartu pintar 3D (Metro Love Pass), dan tombol Tap-in Tiket Masuk Peron.',
+                      icon: '🚇',
+                    },
+                  };
+
+                  const activeNative = nativeCoverMap[currentLayout] || nativeCoverMap.standard_scroll;
+                  const isCustomActive = ['wax_seal_envelope', 'gatefold_ribbon', 'minimalist_1', 'minimalist_2', 'minimalist_3', 'custom_standard'].includes(designSchema.coverStyle || '');
+                  const isNativeActive = !isCustomActive;
+
+                  return (
+                    <div className={`p-4 border rounded-2xl space-y-3.5 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950 border-slate-800'}`}>
+                      <div className="flex items-center justify-between">
+                        <label className="font-bold flex items-center gap-1.5 text-xs text-gold-400">
+                          <MailOpen className="w-3.5 h-3.5" />
+                          2. Model Sampul & Pembuka Undangan (Bawaan Template)
+                        </label>
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                          isNativeActive
+                            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                            : 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+                        }`}>
+                          {isNativeActive ? '✓ 100% Selaras Otomatis' : 'Mode Custom Aktif'}
+                        </span>
+                      </div>
+
+                      {/* Card Preview of the Active Native Cover */}
+                      <div className={`p-4 rounded-xl border transition-all ${
+                        isNativeActive
+                          ? 'bg-gold-500/10 border-gold-500/50 shadow-md ring-1 ring-gold-400/30'
+                          : isLight
+                          ? 'bg-white border-slate-200'
+                          : 'bg-slate-900 border-slate-800'
+                      }`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl p-2 rounded-xl bg-gold-500/15 border border-gold-400/30 shrink-0">
+                              {activeNative.icon}
+                            </span>
+                            <div className="space-y-1 text-left">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className={`text-xs font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                                  {activeNative.title}
+                                </h4>
+                                <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-gold-400 text-slate-950">
+                                  {activeNative.badge}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-400 leading-relaxed">
+                                {activeNative.desc}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Switch button back to native if custom is active */}
+                        {isCustomActive && (
+                          <div className="mt-3 pt-3 border-t border-dashed border-white/10 flex items-center justify-between">
+                            <span className="text-[10px] text-amber-400 font-mono">
+                              Sedang dialihkan ke sampul custom
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setDesignSchema({ ...designSchema, coverStyle: 'auto' as any })}
+                              className="px-3 py-1 rounded-lg text-xs font-bold bg-gold-400 text-slate-950 hover:bg-gold-300 transition-all cursor-pointer shadow-sm"
+                            >
+                              Gunakan Sampul Bawaan Ini
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 3. CUSTOM COVER OVERRIDE OPTIONS */}
                 <div className={`p-4 border rounded-2xl space-y-3 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950 border-slate-800'}`}>
-                  <label className="font-bold flex items-center gap-1.5 text-xs text-gold-400">
-                    <MailOpen className="w-3.5 h-3.5" />
-                    2. Model Sampul & Pembuka Undangan
-                  </label>
+                  <div className="space-y-0.5">
+                    <label className="font-bold flex items-center gap-1.5 text-xs text-gold-400">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      3. Model Sampul Custom (Opsional Override)
+                    </label>
+                    <p className="text-[10px] text-slate-400">
+                      Pilih model sampul di bawah jika Anda ingin mengubah / meng-override sampul bawaan template dengan model amplop fisik atau minimalis khusus:
+                    </p>
+                  </div>
                   <div className="grid grid-cols-2 gap-2.5">
                     {[
                       {
-                        id: 'standard',
-                        title: '🎴 Sampul Standar',
-                        desc: 'Kartu sampul modern klasik dengan tombol Buka Undangan.',
+                        id: 'auto',
+                        title: '✨ Bawaan Template (Rekomendasi)',
+                        desc: 'Otomatis menggunakan model sampul yang 100% selaras dengan mode navigasi yang dipilih.',
+                      },
+                      {
+                        id: 'custom_standard',
+                        title: '🎴 Sampul Standar Klasik',
+                        desc: 'Kartu sampul modern klasik universal dengan tombol Buka Undangan.',
                       },
                       {
                         id: 'wax_seal_envelope',
@@ -817,21 +981,29 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                         desc: 'Foto layar penuh dengan bingkai garis tipis arsitektural, monogram mengambang & frosted pill button.',
                       },
                     ].map((opt) => {
-                      const isSelected = (designSchema.coverStyle || 'standard') === opt.id;
+                      const isAutoSelected = opt.id === 'auto' && (!designSchema.coverStyle || designSchema.coverStyle === 'auto' || designSchema.coverStyle === 'standard');
+                      const isOptionSelected = (designSchema.coverStyle || 'auto') === opt.id || isAutoSelected;
                       return (
                         <button
                           key={opt.id}
                           type="button"
                           onClick={() => setDesignSchema({ ...designSchema, coverStyle: opt.id as any })}
                           className={`p-3 rounded-xl border text-left transition-all ${
-                            isSelected
+                            isOptionSelected
                               ? 'bg-gold-500/20 border-gold-500 text-gold-300 ring-1 ring-gold-400'
                               : isLight
                               ? 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                               : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
                           }`}
                         >
-                          <span className="font-bold text-xs block">{opt.title}</span>
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs block">{opt.title}</span>
+                            {isOptionSelected && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-gold-400 text-slate-950">
+                                Aktif
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[10px] text-slate-400 mt-1 leading-tight">{opt.desc}</p>
                         </button>
                       );
@@ -839,11 +1011,11 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                   </div>
                 </div>
 
-                {/* 3. FLOATING BOTTOM DOCK NAVIGATION */}
+                {/* 4. FLOATING BOTTOM DOCK NAVIGATION */}
                 <div className={`p-4 border rounded-2xl space-y-2 flex items-center justify-between ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950 border-slate-800'}`}>
                   <div>
                     <label className="font-bold text-xs text-slate-200 block">
-                      Floating Bottom Dock Navigation Bar
+                      4. Floating Bottom Dock Navigation Bar
                     </label>
                     <p className="text-[10px] text-slate-400">
                       Menu bar melayang di bawah layar [Beranda | Mempelai | Acara | Galeri | Doa].
@@ -865,11 +1037,11 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                   </button>
                 </div>
 
-                {/* 4. EVENT SECTION STYLE */}
+                {/* 5. EVENT SECTION STYLE */}
                 <div className={`p-4 border rounded-2xl space-y-3 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950 border-slate-800'}`}>
                   <label className="font-bold flex items-center gap-1.5 text-xs text-gold-400">
                     <Ticket className="w-3.5 h-3.5" />
-                    3. Bentuk Jadwal Acara (Event Format)
+                    5. Bentuk Jadwal Acara (Event Format)
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
@@ -3082,6 +3254,201 @@ export const VisualEditor: React.FC<VisualEditorProps> = ({
                 ))}
               </div>
             )}
+
+            {/* TAB 10: TURUT MENGUNDANG */}
+            {activeTab === 'turutMengundang' && (() => {
+              const turutConfig = designSchema.turutMengundang || defaultTurutMengundang;
+              const turutItems = turutConfig.items || [];
+              const isEnabled = turutConfig.enabled !== false;
+
+              return (
+                <div className="space-y-5">
+                  {/* Header & Toggle */}
+                  <div className={`p-4 rounded-2xl border flex items-center justify-between gap-3 ${
+                    isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950 border-slate-800'
+                  }`}>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-gold-500" />
+                        <span className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                          Seksi Turut Mengundang
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Tampilkan daftar pejabat, tokoh kehormatan, dan keluarga besar yang turut mengundang.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => updateTurutMengundang({ enabled: !isEnabled })}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 ${
+                        isEnabled
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-slate-800 text-slate-400 border border-slate-700'
+                      }`}
+                    >
+                      {isEnabled ? '✓ Aktif' : 'Non-Aktif'}
+                    </button>
+                  </div>
+
+                  {/* Section Title & Subtitle */}
+                  <div className="space-y-3">
+                    <div>
+                      <label className={`block mb-1 text-xs font-semibold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                        Judul Bagian
+                      </label>
+                      <input
+                        type="text"
+                        value={turutConfig.title ?? 'Turut Mengundang'}
+                        onChange={(e) => updateTurutMengundang({ title: e.target.value })}
+                        placeholder="Turut Mengundang"
+                        className={`w-full border rounded-xl p-2.5 text-xs font-bold focus:outline-none focus:border-gold-500 ${
+                          isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
+                        }`}
+                      />
+                    </div>
+
+                    <div>
+                      <label className={`block mb-1 text-xs font-semibold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                        Kalimat Pengantar / Subjudul
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={
+                          turutConfig.subtitle ??
+                          'Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga atas kehadiran dan doa restu Bapak/Ibu/Saudara/i:'
+                        }
+                        onChange={(e) => updateTurutMengundang({ subtitle: e.target.value })}
+                        placeholder="Kalimat pengantar..."
+                        className={`w-full border rounded-xl p-2.5 text-xs focus:outline-none focus:border-gold-500 resize-none ${
+                          isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-white'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quick Add Presets */}
+                  <div className="space-y-2">
+                    <span className={`block text-[11px] font-bold uppercase tracking-wider ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                      Contoh / Tambah Cepat:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { name: 'Bapak Gubernur Bengkulu', role: 'Tokoh Kehormatan' },
+                        { name: 'Bapak Bupati', role: 'Tokoh Kehormatan' },
+                        { name: 'Bapak Walikota', role: 'Tokoh Kehormatan' },
+                        { name: 'Keluarga Besar Mempelai Pria', role: 'Keluarga Besar Pria' },
+                        { name: 'Keluarga Besar Mempelai Wanita', role: 'Keluarga Besar Wanita' },
+                        { name: 'Alim Ulama & Tokoh Masyarakat', role: 'Tokoh Masyarakat' },
+                      ].map((sample, sIdx) => (
+                        <button
+                          key={sIdx}
+                          type="button"
+                          onClick={() => {
+                            updateTurutMengundang({
+                              items: [...turutItems, sample],
+                            });
+                          }}
+                          className={`text-[11px] px-2.5 py-1 rounded-lg border font-medium transition-all ${
+                            isLight
+                              ? 'bg-slate-100 hover:bg-gold-50 hover:border-gold-300 text-slate-700'
+                              : 'bg-slate-900 hover:bg-slate-800 hover:border-gold-500/40 text-slate-300'
+                          }`}
+                        >
+                          + {sample.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Items List */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className={`font-bold text-xs uppercase tracking-wider ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        Daftar Nama & Tokoh ({turutItems.length})
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateTurutMengundang({
+                            items: [...turutItems, { name: '', role: '' }],
+                          });
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-gold-500 hover:bg-gold-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Tambah Tokoh / Nama</span>
+                      </button>
+                    </div>
+
+                    {turutItems.length === 0 ? (
+                      <div className={`p-6 rounded-2xl border text-center space-y-2 ${
+                        isLight ? 'bg-slate-50 border-dashed border-slate-300' : 'bg-slate-950/50 border-dashed border-slate-800'
+                      }`}>
+                        <Users className="w-8 h-8 text-slate-400 mx-auto" />
+                        <p className="text-xs text-slate-400">
+                          Belum ada daftar tokoh yang turut mengundang. Klik tombol "+ Tambah Tokoh / Nama" di atas.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2.5">
+                        {turutItems.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className={`p-3 rounded-xl border flex items-center gap-2.5 ${
+                              isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950 border-slate-800'
+                            }`}
+                          >
+                            <span className="w-5 h-5 rounded-full bg-gold-500/10 text-gold-500 font-bold text-[10px] flex items-center justify-center shrink-0">
+                              {idx + 1}
+                            </span>
+                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <input
+                                type="text"
+                                value={item.name}
+                                onChange={(e) => {
+                                  const next = [...turutItems];
+                                  next[idx] = { ...next[idx], name: e.target.value };
+                                  updateTurutMengundang({ items: next });
+                                }}
+                                placeholder="Nama Tokoh (contoh: Bapak Gubernur Bengkulu)"
+                                className={`border rounded-lg p-2 text-xs font-semibold focus:outline-none focus:border-gold-500 ${
+                                  isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
+                                }`}
+                              />
+                              <input
+                                type="text"
+                                value={item.role || ''}
+                                onChange={(e) => {
+                                  const next = [...turutItems];
+                                  next[idx] = { ...next[idx], role: e.target.value };
+                                  updateTurutMengundang({ items: next });
+                                }}
+                                placeholder="Gelar / Keterangan (Opsional)"
+                                className={`border rounded-lg p-2 text-xs focus:outline-none focus:border-gold-500 ${
+                                  isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
+                                }`}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = turutItems.filter((_, i) => i !== idx);
+                                updateTurutMengundang({ items: next });
+                              }}
+                              className="p-1.5 text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0"
+                              title="Hapus Tokoh"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* MOBILE STICKY BOTTOM QUICK ACTION BAR */}

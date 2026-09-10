@@ -10,6 +10,7 @@ import {
 import { getCleanName } from '@/utils/nameUtils';
 import { isLightTheme } from '@/utils/themeUtils';
 import { ScrollReveal } from '@/components/effects/ScrollReveal';
+import { TurutMengundangSection } from '../components/TurutMengundangSection';
 
 interface IsometricMiniWorldLayoutProps {
   invitation: any;
@@ -74,6 +75,10 @@ export const IsometricMiniWorldLayout: React.FC<IsometricMiniWorldLayoutProps> =
       return fallback;
     }
   };
+
+  const designSchema = typeof invitation.designConfig === 'object' && invitation.designConfig !== null
+    ? invitation.designConfig
+    : safeParseJSON(invitation.designConfig, {});
 
   const galleryList: string[] = safeParseJSON(invitation.galleryPhotos, []);
   const eventsList = invitation.events || [];
@@ -821,6 +826,18 @@ export const IsometricMiniWorldLayout: React.FC<IsometricMiniWorldLayoutProps> =
                   <p className="text-xs text-slate-300 leading-relaxed font-serif italic max-w-sm mx-auto">
                     "Merupakan suatu kehormatan dan kebahagiaan yang tak terhingga bagi kami sekeluarga apabila Bapak/Ibu/Saudara/i berkenan hadir serta memberikan doa restu untuk lembaran hidup baru kami."
                   </p>
+
+                  <div className="pt-2 text-left">
+                    <TurutMengundangSection
+                      config={designSchema?.turutMengundang}
+                      theme={theme}
+                      fonts={fonts}
+                      textPrimaryColor="#F8FAFC"
+                      contentCardBg="rgba(15, 23, 42, 0.85)"
+                      contentCardBorderClass="border border-white/20 shadow-xl"
+                      cardBorderRadius="rounded-2xl"
+                    />
+                  </div>
 
                   <div className="pt-2 font-serif">
                     <span className="text-[10px] uppercase tracking-widest text-amber-400 block font-mono">

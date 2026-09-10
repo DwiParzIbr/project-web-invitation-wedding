@@ -55,10 +55,14 @@ export default function LoginPage() {
         return;
       }
 
+      const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+      const redirectUrl = searchParams.get('redirect');
+      const safeRedirect = redirectUrl && redirectUrl.startsWith('/') ? redirectUrl : null;
+
       if (data.user?.role === 'ADMIN' || data.user?.role === 'OPERATOR') {
-        router.push('/admin');
+        router.push(safeRedirect || '/admin');
       } else {
-        router.push('/dashboard');
+        router.push(safeRedirect || '/dashboard');
       }
     } catch (err) {
       setErrorMsg('Terjadi kendala jaringan. Pastikan koneksi internet Anda stabil.');

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Crown, Eye, Palette, Sparkles, ShieldCheck, Feather, Flower2, LayoutGrid, Heart, Minimize2 } from 'lucide-react';
 import { ScrollReveal } from '@/components/effects/ScrollReveal';
@@ -26,6 +26,18 @@ interface TemplateGallerySectionProps {
 
 export function TemplateGallerySection({ initialTemplates, categories }: TemplateGallerySectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.user) {
+          setIsLoggedIn(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const categoryFilterList = [
     { id: 'all', name: 'Semua Template', icon: 'Sparkles' },
@@ -132,13 +144,15 @@ export function TemplateGallerySection({ initialTemplates, categories }: Templat
                         <span>Demo Live</span>
                       </Link>
 
-                      <Link
-                        href={`/editor/${tpl.id}`}
-                        className="px-3.5 py-2 rounded-xl gold-shimmer-btn text-slate-950 text-xs font-extrabold transition-all flex items-center gap-1.5 shadow-md hover:scale-105"
-                      >
-                        <Palette className="w-3.5 h-3.5 text-slate-950" />
-                        <span>Pilih</span>
-                      </Link>
+                      {isLoggedIn && (
+                        <Link
+                          href={`/editor/${tpl.id}`}
+                          className="px-3.5 py-2 rounded-xl gold-shimmer-btn text-slate-950 text-xs font-extrabold transition-all flex items-center gap-1.5 shadow-md hover:scale-105"
+                        >
+                          <Palette className="w-3.5 h-3.5 text-slate-950" />
+                          <span>Pilih</span>
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -103,15 +103,19 @@ export default async function HomePage() {
               <div className="pt-6 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-600 dark:text-slate-400">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-gold-500" />
-                  <span>Upload MP3 Musik Kustom</span>
+                  <span>Upload Musik MP3 Kustom</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-gold-500" />
-                  <span>Pilihan Kata Mutiara Indah</span>
+                  <span>Galeri Foto & Video Prewedding</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-gold-500" />
-                  <span>RSVP & Digital Gift QRIS</span>
+                  <span>Navigasi Peta Google Maps</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-gold-500" />
+                  <span>Form RSVP & Rekap Tamu</span>
                 </div>
               </div>
             </ScrollReveal>

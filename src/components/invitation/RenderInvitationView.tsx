@@ -36,14 +36,8 @@ import {
   Pause,
   ArrowDownCircle,
 } from 'lucide-react';
-import { InteractiveWaxSealEnvelope } from './components/InteractiveWaxSealEnvelope';
-import { FrenchGatefoldRibbonCover } from './components/FrenchGatefoldRibbonCover';
-import { 
-  MinimalistCover1, 
-  MinimalistCover2, 
-  MinimalistCover3 
-} from './components/MinimalistCoverLayouts';
-import { StandardCoverCard } from './components/StandardCoverCard';
+import { CoverResolver } from './covers/CoverResolver';
+import { TurutMengundangSection } from './components/TurutMengundangSection';
 import { BottomDockNav } from './components/BottomDockNav';
 import { BoardingPassEvent } from './components/BoardingPassEvent';
 import { MiniCalendarEvent } from './components/MiniCalendarEvent';
@@ -851,64 +845,17 @@ export const RenderInvitationView: React.FC<RenderInvitationViewProps> = ({
         </div>
       )}
 
-      {/* COVER ENVELOPE WITH WAX SEAL OR STANDARD CARD */}
+      {/* COVER ENVELOPE / NATIVE OPENING PORTAL */}
       {!isOpen ? (
-        designSchema?.coverStyle === 'wax_seal_envelope' ? (
-          <InteractiveWaxSealEnvelope
-            invitation={invitation}
-            guestName={guestName}
-            onOpen={handleOpenInvitation}
-            theme={theme}
-            fonts={fonts}
-            designSchema={designSchema}
-          />
-        ) : designSchema?.coverStyle === 'gatefold_ribbon' ? (
-          <FrenchGatefoldRibbonCover
-            invitation={invitation}
-            guestName={guestName}
-            onOpen={handleOpenInvitation}
-            theme={theme}
-            fonts={fonts}
-            designSchema={designSchema}
-          />
-        ) : designSchema?.coverStyle === 'minimalist_1' ? (
-          <MinimalistCover1
-            invitation={invitation}
-            guestName={guestName}
-            onOpen={handleOpenInvitation}
-            theme={theme}
-            fonts={fonts}
-            designSchema={designSchema}
-          />
-        ) : designSchema?.coverStyle === 'minimalist_2' ? (
-          <MinimalistCover2
-            invitation={invitation}
-            guestName={guestName}
-            onOpen={handleOpenInvitation}
-            theme={theme}
-            fonts={fonts}
-            designSchema={designSchema}
-          />
-        ) : designSchema?.coverStyle === 'minimalist_3' ? (
-          <MinimalistCover3
-            invitation={invitation}
-            guestName={guestName}
-            onOpen={handleOpenInvitation}
-            theme={theme}
-            fonts={fonts}
-            designSchema={designSchema}
-          />
-        ) : (
-          <StandardCoverCard
-            invitation={invitation}
-            guestName={guestName}
-            onOpen={handleOpenInvitation}
-            theme={theme}
-            fonts={fonts}
-            coverCardBg={coverCardBg}
-            designSchema={designSchema}
-          />
-        )
+        <CoverResolver
+          invitation={invitation}
+          guestName={guestName}
+          onOpen={handleOpenInvitation}
+          theme={theme}
+          fonts={fonts}
+          coverCardBg={coverCardBg}
+          designSchema={designSchema}
+        />
       ) : designSchema?.layoutType === 'story_slides' ? (
         <StorySlidesLayout
           invitation={invitation}
@@ -1720,6 +1667,18 @@ export const RenderInvitationView: React.FC<RenderInvitationViewProps> = ({
               </section>
             </ScrollReveal>
           )}
+
+          {/* TURUT MENGUNDANG SECTION */}
+          <TurutMengundangSection
+            config={designSchema?.turutMengundang}
+            theme={theme}
+            fonts={fonts}
+            textPrimaryColor={textPrimaryColor}
+            contentCardBg={contentCardBg}
+            contentCardBorderClass={contentCardBorderClass}
+            cardBorderRadius={getCardBorderRadius()}
+            RenderOrnamentDivider={RenderOrnamentDivider}
+          />
 
           {/* FOOTER THANK YOU */}
           <ScrollReveal direction="fade">

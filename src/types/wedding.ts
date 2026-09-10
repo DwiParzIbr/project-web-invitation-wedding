@@ -56,15 +56,29 @@ export interface DesignSchema {
   
   // Interaction Paradigm & Layout Styles
   layoutType?: 'standard_scroll' | 'story_slides' | 'magazine_editorial' | 'cinematic_trailer' | '3d_flipbook' | 'horizontal_gallery' | 'isometric_map' | 'radial_constellation' | 'metro_express';
-  coverStyle?: 'standard' | 'wax_seal_envelope' | 'gatefold_ribbon' | 'minimalist_1' | 'minimalist_2' | 'minimalist_3';
+  coverStyle?: 'auto' | 'native' | 'standard' | 'wax_seal_envelope' | 'gatefold_ribbon' | 'minimalist_1' | 'minimalist_2' | 'minimalist_3' | 'custom_standard';
   navigationStyle?: 'bottom_dock' | 'none';
   eventStyle?: 'standard' | 'boarding_pass' | 'mini_calendar';
   couplePhotoStyle?: 'circle' | 'arch' | 'polaroid';
   loveStoryStyle?: 'timeline' | 'chat_message' | 'metro_map';
   galleryStyle?: 'grid' | 'film_strip' | 'masonry';
   visualEffect?: 'none' | 'sparkles' | 'floating_petals' | 'cyber_glow';
+  turutMengundang?: TurutMengundangConfig;
 
   sections: SectionConfig[];
+}
+
+export interface TurutMengundangItem {
+  name: string;
+  role?: string;
+}
+
+export interface TurutMengundangConfig {
+  enabled?: boolean;
+  title?: string;
+  subtitle?: string;
+  items?: TurutMengundangItem[];
+  rawText?: string;
 }
 
 export interface LoveStoryItem {

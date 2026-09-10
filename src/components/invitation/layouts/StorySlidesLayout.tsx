@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { getCleanName, getInitialLetter } from '@/utils/nameUtils';
 import { isLightTheme } from '@/utils/themeUtils';
+import { TurutMengundangSection } from '../components/TurutMengundangSection';
 import { BoardingPassEvent } from '../components/BoardingPassEvent';
 import { MiniCalendarEvent } from '../components/MiniCalendarEvent';
 import { PolaroidPhotos } from '../components/PolaroidPhotos';
@@ -82,12 +83,27 @@ export const StorySlidesLayout: React.FC<StorySlidesLayoutProps> = ({
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  const safeParseJSON = (data: any, fallback: any) => {
+    if (!data) return fallback;
+    let parsed = data;
+    try {
+      while (typeof parsed === 'string') parsed = JSON.parse(parsed);
+      return parsed || fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const designSchema = typeof invitation.designConfig === 'object' && invitation.designConfig !== null
+    ? invitation.designConfig
+    : safeParseJSON(invitation.designConfig, {});
+  const showTurutMengundang = designSchema?.turutMengundang?.enabled !== false;
+  const totalSlides = showTurutMengundang ? 9 : 8;
+
   // Gesture tracking refs: Supports SWIPE LEFT/RIGHT, SCREEN TAP, and VERTICAL SCROLL concurrently
   const gestureStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const isVerticalScrollRef = useRef<boolean>(false);
   const didSwipeRef = useRef<boolean>(false);
-
-  const totalSlides = 8;
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const handleCopy = (text: string, idx: number) => {
@@ -252,19 +268,7 @@ export const StorySlidesLayout: React.FC<StorySlidesLayoutProps> = ({
     }),
   };
 
-  // Safe parse data
-  const safeParseJSON = (data: any, fallback: any) => {
-    if (!data) return fallback;
-    let parsed = data;
-    try {
-      while (typeof parsed === 'string') parsed = JSON.parse(parsed);
-      return parsed || fallback;
-    } catch {
-      return fallback;
-    }
-  };
 
-  const designSchema = safeParseJSON(invitation.designConfig, {});
   const galleryList: string[] = safeParseJSON(invitation.galleryPhotos, []);
   const loveStoryList = safeParseJSON(invitation.loveStory, []);
   const digitalGiftsList = safeParseJSON(invitation.digitalGifts, []);
@@ -847,10 +851,33 @@ export const StorySlidesLayout: React.FC<StorySlidesLayoutProps> = ({
             </motion.div>
           )}
 
-          {/* SLIDE 7: UCAPAN TERIMA KASIH DENGAN LATAR BELAKANG FOTO PENGANTIN */}
-          {currentSlide === 7 && (
+          {/* SLIDE 7: TURUT MENGUNDANG */}
+          {showTurutMengundang && currentSlide === 7 && (
             <motion.div
-              key="slide-7"
+              key="slide-turut-mengundang"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="relative w-full max-w-sm mx-auto space-y-4 my-auto pb-4"
+            >
+              <TurutMengundangSection
+                config={designSchema?.turutMengundang}
+                theme={theme}
+                fonts={fonts}
+                textPrimaryColor={isLight ? '#0f172a' : '#F8FAFC'}
+                contentCardBg={isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.9)'}
+                contentCardBorderClass={isLight ? 'border border-amber-400/40 shadow-xl' : 'border border-gold-500/30 shadow-2xl'}
+                cardBorderRadius="rounded-3xl"
+              />
+            </motion.div>
+          )}
+
+          {/* SLIDE: UCAPAN TERIMA KASIH DENGAN LATAR BELAKANG FOTO PENGANTIN */}
+          {currentSlide === (showTurutMengundang ? 8 : 7) && (
+            <motion.div
+              key="slide-final"
               custom={direction}
               variants={slideVariants}
               initial="enter"

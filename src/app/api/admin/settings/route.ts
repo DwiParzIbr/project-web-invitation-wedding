@@ -16,6 +16,9 @@ const defaultSettings = {
   freeTierLimit: 0, // Free tier eliminated
   aiModelDefault: 'Weddora Smart Designer Engine',
   supportWhatsapp: '6282278765076',
+  supportEmail: 'weddorawebsite@gmail.com',
+  socialInstagram: 'https://instagram.com/weddora.id',
+  socialTiktok: 'https://tiktok.com/@weddora.id',
   qrisMerchantName: 'WEDDORA DIGITAL INVITATION',
   midtransClientKey: 'SB-Mid-client-XXXXXX',
   midtransServerKey: 'SB-Mid-server-XXXXXX',

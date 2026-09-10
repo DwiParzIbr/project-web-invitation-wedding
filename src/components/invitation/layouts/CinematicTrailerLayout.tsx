@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Play, Plus, Check, Volume2, VolumeX, Calendar, Clock, MapPin, 
-  Film, Sparkles, Star, Users, ExternalLink, Ticket, ChevronRight, X 
+  Film, Sparkles, Star, Users, ExternalLink, Ticket, ChevronRight, X, ArrowUp 
 } from 'lucide-react';
 import { getCleanName } from '@/utils/nameUtils';
 import { isLightTheme } from '@/utils/themeUtils';
@@ -76,6 +76,10 @@ export const CinematicTrailerLayout: React.FC<CinematicTrailerLayoutProps> = ({
     }
   };
 
+  const designSchema = typeof invitation.designConfig === 'object' && invitation.designConfig !== null
+    ? invitation.designConfig
+    : safeParseJSON(invitation.designConfig, {});
+
   const galleryList: string[] = safeParseJSON(invitation.galleryPhotos, []);
   const loveStoryList = safeParseJSON(invitation.loveStory, []);
   const eventsList = invitation.events || [];
@@ -126,6 +130,25 @@ export const CinematicTrailerLayout: React.FC<CinematicTrailerLayoutProps> = ({
 
   const isLight = isLightTheme(theme);
   const primaryAccent = theme?.primary || (isLight ? '#C9A66B' : '#E50914');
+
+  const showTurutMengundang = designSchema?.turutMengundang?.enabled !== false;
+  const turutConfig = designSchema?.turutMengundang;
+  let turutItems: Array<{ name: string; role?: string }> = turutConfig?.items || [];
+  if (turutItems.length === 0 && turutConfig?.rawText && turutConfig.rawText.trim()) {
+    turutItems = turutConfig.rawText
+      .split('\n')
+      .map((line: string) => line.trim().replace(/^[-*•\d.]+\s*/, ''))
+      .filter(Boolean)
+      .map((name: string) => ({ name }));
+  }
+  if (turutItems.length === 0) {
+    turutItems = [
+      { name: 'Bapak Gubernur Bengkulu', role: 'Tokoh Kehormatan' },
+      { name: 'Bapak Bupati', role: 'Tokoh Kehormatan' },
+      { name: 'Keluarga Besar Mempelai Pria' },
+      { name: 'Keluarga Besar Mempelai Wanita' },
+    ];
+  }
 
   return (
     <div className={`relative z-10 w-full min-h-screen overflow-x-hidden font-sans pb-24 ${
@@ -652,6 +675,209 @@ export const CinematicTrailerLayout: React.FC<CinematicTrailerLayoutProps> = ({
               <span className="text-[9px] font-mono text-slate-500 tracking-widest">
                 TKT-{weddingDate.getFullYear()}-VIP-{guestName.replace(/\s+/g, '').toUpperCase().slice(0, 8)}
               </span>
+            </div>
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* ========================================================
+          ACT VI: TURUT MENGUNDANG (SPECIAL GUEST STARS & PATRONS)
+          ======================================================== */}
+      {showTurutMengundang && (
+        <section className="px-4 py-8 max-w-xl mx-auto space-y-6">
+          <ScrollReveal direction="up">
+            <div className={`p-6 sm:p-8 rounded-3xl text-center space-y-5 border relative overflow-hidden shadow-2xl ${
+              isLight
+                ? 'bg-white/95 border-stone-200 text-slate-900 shadow-stone-200/60'
+                : 'bg-gradient-to-b from-[#1c1d22] via-[#141519] to-[#0c0d0f] border-white/15 text-white shadow-black/80'
+            }`}>
+              {/* Top Spotlight Glow Accent */}
+              <div 
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-20 rounded-full blur-3xl pointer-events-none opacity-25"
+                style={{ backgroundColor: primaryAccent || '#E50914' }}
+              />
+
+              {/* Header Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-widest uppercase bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-sm">
+                <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
+                <span>ACT VI • SPECIAL GUEST STARS &amp; EXECUTIVE PATRONS</span>
+              </div>
+
+              {/* Title */}
+              <div className="space-y-1">
+                <h2 
+                  className={`text-2xl sm:text-4xl font-bold tracking-wider pt-1 uppercase ${
+                    isLight ? 'text-slate-950' : 'text-white drop-shadow-md'
+                  }`}
+                  style={{ fontFamily: `'${fonts?.heading || 'Cinzel'}', serif` }}
+                >
+                  {turutConfig?.title?.trim() || 'Turut Mengundang'}
+                </h2>
+                <span className="text-[10px] font-mono tracking-[0.25em] text-[#E50914] block uppercase font-bold">
+                  Distinguished Cast of Honor • Premiere Guests
+                </span>
+              </div>
+
+              {/* Subtitle */}
+              <p className={`text-xs max-w-md mx-auto leading-relaxed font-sans ${
+                isLight ? 'text-slate-600' : 'text-slate-300'
+              }`}>
+                &ldquo;{turutConfig?.subtitle?.trim() || 'Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga atas kehadiran dan doa restu Bapak/Ibu/Saudara/i:'}&rdquo;
+              </p>
+
+              {/* Cinema Honoree List */}
+              <div className="space-y-2.5 text-left pt-2">
+                {turutItems.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-3.5 rounded-2xl border flex items-center justify-between transition-all duration-200 ${
+                      isLight
+                        ? 'bg-stone-50 border-stone-200 hover:border-amber-400 shadow-xs'
+                        : 'bg-black/60 border-white/10 hover:border-[#E50914]/50 shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 font-bold text-xs ${
+                        isLight
+                          ? 'bg-amber-100 text-amber-900 border-amber-300'
+                          : 'bg-[#E50914]/20 text-amber-400 border-[#E50914]/40'
+                      }`}>
+                        ★
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 
+                          className={`text-sm font-bold tracking-wide leading-snug truncate ${
+                            isLight ? 'text-slate-900' : 'text-white'
+                          }`}
+                          style={{ fontFamily: `'${fonts?.heading || 'Cinzel'}', serif` }}
+                        >
+                          {item.name}
+                        </h4>
+                        {item.role && (
+                          <span className={`text-[10px] block font-mono uppercase tracking-wider ${
+                            isLight ? 'text-slate-600' : 'text-amber-400/90'
+                          }`}>
+                            {item.role}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className={`text-[9px] font-mono px-2.5 py-1 rounded-full uppercase tracking-wider font-semibold shrink-0 ml-2 ${
+                      isLight
+                        ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                        : 'bg-white/5 text-amber-300 border border-white/10'
+                    }`}>
+                      VIP PATRON
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Cinema Directory Footer */}
+              <div className={`pt-3 border-t text-center space-y-1 ${
+                isLight ? 'border-stone-200' : 'border-white/10'
+              }`}>
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400 font-bold block">
+                  Beserta Segenap Keluarga Besar Kedua Mempelai
+                </span>
+                <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest block pt-0.5">
+                  Official Weddora Premiere Cast Directory
+                </span>
+              </div>
+            </div>
+          </ScrollReveal>
+        </section>
+      )}
+
+      {/* ========================================================
+          CLOSING CREDITS: UCAPAN TERIMA KASIH (THE GRAND FINALE)
+          ======================================================== */}
+      <section className="px-4 py-8 max-w-xl mx-auto space-y-6">
+        <ScrollReveal direction="up">
+          <div className={`p-6 sm:p-8 rounded-3xl text-center space-y-6 border relative overflow-hidden shadow-2xl ${
+            isLight
+              ? 'bg-white/95 border-stone-200 text-slate-900 shadow-stone-200/60'
+              : 'bg-gradient-to-b from-[#1c1d22] via-[#141519] to-[#0c0d0f] border-white/15 text-white shadow-black/80'
+          }`}>
+            {/* Top Spotlight Glow Accent */}
+            <div 
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-20 rounded-full blur-3xl pointer-events-none opacity-25"
+              style={{ backgroundColor: primaryAccent || '#E50914' }}
+            />
+
+            {/* Header Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-widest uppercase bg-[#E50914]/15 text-[#E50914] border border-[#E50914]/30 shadow-sm">
+              <Film className="w-3.5 h-3.5 text-[#E50914]" />
+              <span>THE GRAND FINALE • CLOSING CREDITS</span>
+            </div>
+
+            {/* Title */}
+            <div className="space-y-1">
+              <h2 
+                className={`text-2xl sm:text-4xl font-bold tracking-wider pt-1 uppercase ${
+                  isLight ? 'text-slate-950' : 'text-white drop-shadow-md'
+                }`}
+                style={{ fontFamily: `'${fonts?.heading || 'Cinzel'}', serif` }}
+              >
+                Ungkapan Terima Kasih
+              </h2>
+              <span className="text-[10px] font-mono tracking-[0.25em] text-amber-400 block uppercase font-bold">
+                A Journey of Eternal Love
+              </span>
+            </div>
+
+            {/* Heartfelt Note */}
+            <p className={`text-xs max-w-md mx-auto leading-relaxed font-sans ${
+              isLight ? 'text-slate-600' : 'text-slate-300'
+            }`}>
+              &ldquo;Merupakan suatu kehormatan dan kebahagiaan yang tak terhingga bagi kami sekeluarga, atas kehadiran serta doa restu Bapak/Ibu/Saudara/i yang telah menjadi bagian dari alur kisah cinta terindah kami.&rdquo;
+            </p>
+
+            {/* Hollywood Movie Credits Card */}
+            <div className={`p-4 sm:p-5 rounded-2xl border space-y-3 font-mono ${
+              isLight ? 'bg-stone-50 border-stone-200' : 'bg-black/60 border-white/10'
+            }`}>
+              <div>
+                <span className="text-[9px] uppercase tracking-widest text-[#E50914] font-bold block">
+                  PRODUCED &amp; DIRECTED WITH LOVE
+                </span>
+                <h3 
+                  className={`text-lg sm:text-xl font-bold font-serif pt-0.5 ${
+                    isLight ? 'text-slate-900' : 'text-white'
+                  }`}
+                  style={{ fontFamily: `'${fonts?.heading || 'Cinzel'}', serif` }}
+                >
+                  {groomName} &amp; {brideName}
+                </h3>
+              </div>
+
+              <div className="border-t border-dashed border-white/15 pt-2.5">
+                <span className="text-[9px] uppercase tracking-widest text-slate-400 block font-semibold">
+                  WITH GRACIOUS BLESSINGS FROM
+                </span>
+                <span className={`text-xs font-semibold block pt-0.5 ${
+                  isLight ? 'text-slate-800' : 'text-slate-200'
+                }`}>
+                  Beserta Segenap Keluarga Besar Kedua Mempelai
+                </span>
+              </div>
+            </div>
+
+            {/* Button Scroll Back to Hero */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="w-full py-3 rounded-xl font-mono text-xs uppercase tracking-widest font-bold bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <ArrowUp className="w-3.5 h-3.5 text-[#E50914]" />
+                <span>Kembali ke Awal Pemutaran (Top)</span>
+              </button>
+            </div>
+
+            {/* Film Studio Tagline */}
+            <div className="pt-1 text-[9px] font-mono tracking-[0.2em] uppercase opacity-40">
+              © {weddingDate.getFullYear()} WEDDORA CINEMATIC STUDIOS • ALL HEARTS RESERVED
             </div>
           </div>
         </ScrollReveal>
